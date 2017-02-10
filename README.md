@@ -176,6 +176,6 @@ Parameter | Permission | Description
 `underline` or `n` | `markdown.styles.underline` |  allow use of underline
 `//<command>` | `markdown.actions.command.run` | allow use of run command action
 `/<command>` | `markdown.actions.command.suggest` | allow use of suggest command action
-`[param](content)` or `e` | `markdown.actions.text.show` | allow use of show text action
-`<plain text>` or `e` | `markdown.actions.text.insert` | allow use of insert text action
-`http://url.com` or `e` | `markdown.actions.url.open` | allow use of open url action
+`[param](content)` | `markdown.actions.text.show` | allow use of show text action
+`<plain text>` | `markdown.actions.text.insert` | allow use of insert text action
+`http://url.com` | `markdown.actions.url.open` | allow use of open url action
