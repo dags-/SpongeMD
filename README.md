@@ -3,10 +3,11 @@ A small, Markdown inspired, TextSerializer for SpongeAPI
 _This is a library, not a standalone plugin!_
 
 ### Contents
-1. [Dependencies](#Dependencies)
-2. [Specification](#Notation-Specification)
-3. [Examples](#Examples)
-4. [Permissions](#Permissions)
+1. [Dependencies](#dependencies)
+2. [Usage](#usage)
+3. [Specification](#notation-specification)
+4. [Examples](#examples)
+5. [Permissions](#permissions)
 
 ### Dependencies
 ##### Gradle
