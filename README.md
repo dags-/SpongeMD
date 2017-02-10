@@ -134,7 +134,7 @@ Examples |
 `plain text and then [green](some green text)`|
 `plain text and then [green](some green text) and then plain text again`|
 `[red](some red text with [yellow,underline](some yellow, underlined text) and some more red text)`|
-`[yellow,underlined,[green](click me!),https://github.com](some text that shows a hover message and opens a url)`|
+`[yellow,underline,[green](click me!),https://github.com](some text that shows a hover message and opens a url)`|
 
 Short-hand |
 :---|
