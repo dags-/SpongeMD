@@ -60,7 +60,7 @@ As shown in the following example, there are three different ways of obtaining a
 ``` java
 public void example(Player player) {
     // All formatting colors/styles/actions allowed
-    Text example0 = MarkdownSpec.create().render("[green,underlined](this is some green & underlined text!)");
+    Text example0 = MarkdownSpec.create().render("[green,underline](this is some green & underlined text!)");
     player.sendMessage(example0);
 
     // Restrict colors/styles/actions to those allowed by the Player's permissions
@@ -148,34 +148,34 @@ Short-hand |
 ====
 
 ### Permissions
-Permission | Description
-:---|:---
-`markdown.colors.aqua` | allow use of aqua
-`markdown.colors.black` | allow use of black
-`markdown.colors.blue` | allow use of blue
-`markdown.colors.dark_aqua` | allow use of dark_aqua
-`markdown.colors.dark_blue` | allow use of dark_blue
-`markdown.colors.dark_gray` | allow use of dark_gray
-`markdown.colors.dark_green` | allow use of dark_green
-`markdown.colors.dark_purple` | allow use of dark_purple
-`markdown.colors.dark_red` | allow use of dark_red
-`markdown.colors.gold` | allow use of gold
-`markdown.colors.gray` | allow use of gray
-`markdown.colors.green` | allow use of green
-`markdown.colors.light_purple` | allow use of light_purple
-`markdown.colors.none` | allow use of none
-`markdown.colors.red` | allow use of red
-`markdown.colors.reset` | allow use of reset
-`markdown.colors.white` | allow use of white
-`markdown.colors.yellow` | allow use of yellow
-`markdown.styles.bold` | allow use of bold
-`markdown.styles.italic` | allow use of italic
-`markdown.styles.obfuscated` | allow use of obfuscated
-`markdown.styles.reset` | allow use of reset
-`markdown.styles.strikethrough` | allow use of strikethrough
-`markdown.styles.underline` |  allow use of underline
-`markdown.actions.command.run` | allow use of run command action
-`markdown.actions.command.suggest` | allow use of suggest command action
-`markdown.actions.text.show` | allow use of show text action
-`markdown.actions.text.insert` | allow use of insert text action
-`markdown.actions.url.open` | allow use of open url action
+Parameter | Permission | Description
+:---|:---|:---
+`aqua` or `b` | `markdown.colors.aqua` | allow use of aqua
+`black` or `0` '| `markdown.colors.black` | allow use of black
+`blue` or `9` | `markdown.colors.blue` | allow use of blue
+`dark_aqua` or `3` | `markdown.colors.dark_aqua` | allow use of dark_aqua
+`dark_blue` or `1` | `markdown.colors.dark_blue` | allow use of dark_blue
+`dark_gray` or `8` | `markdown.colors.dark_gray` | allow use of dark_gray
+`dark_green` or `2` | `markdown.colors.dark_green` | allow use of dark_green
+`dark_purple` or `5` | `markdown.colors.dark_purple` | allow use of dark_purple
+`dark_red` or `4` | `markdown.colors.dark_red` | allow use of dark_red
+`gold` or `6` | `markdown.colors.gold` | allow use of gold
+`gray` or `7` | `markdown.colors.gray` | allow use of gray
+`green` or `a` | `markdown.colors.green` | allow use of green
+`light_purple` or `d` | `markdown.colors.light_purple` | allow use of light_purple
+`none` | `markdown.colors.none` | allow use of none
+`red` or `c` | `markdown.colors.red` | allow use of red
+`reset` | `markdown.colors.reset` | allow use of reset
+`white` or `f` | `markdown.colors.white` | allow use of white
+`yellow` or `e` | `markdown.colors.yellow` | allow use of yellow
+`bold` or `l` | `markdown.styles.bold` | allow use of bold
+`italic` or `o` | `markdown.styles.italic` | allow use of italic
+`obfuscated` or `k` | `markdown.styles.obfuscated` | allow use of obfuscated
+`reset` or `r` | `markdown.styles.reset` | allow use of reset
+`yellow` or `e` | `markdown.styles.strikethrough` | allow use of strikethrough
+`underline` or `n` | `markdown.styles.underline` |  allow use of underline
+`//<command>` | `markdown.actions.command.run` | allow use of run command action
+`/<command>` | `markdown.actions.command.suggest` | allow use of suggest command action
+`[param](content)` or `e` | `markdown.actions.text.show` | allow use of show text action
+`<plain text>` or `e` | `markdown.actions.text.insert` | allow use of insert text action
+`http://url.com` or `e` | `markdown.actions.url.open` | allow use of open url action
