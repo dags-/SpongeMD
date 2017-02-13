@@ -10,6 +10,8 @@ _This is a library, not a standalone plugin!_
 5. [Permissions](#permissions)
 
 ### Dependencies
+See releases for the [latest version](https://github.com/dags-/SpongeMD/releases/latest).
+
 ##### Gradle
 ```
 repositories {
@@ -21,7 +23,7 @@ repositories {
 
 dependencies {
     ...
-    compile ('com.github.dags-:SpongeMD:1.0-SNAPSHOT') {
+    compile ('com.github.dags-:SpongeMD:{insert_version}') {
         exclude module: 'spongeapi'
     }
 }
@@ -41,7 +43,7 @@ dependencies {
     <dependency>
         <groupId>com.github.dags-</groupId>
         <artifactId>SpongeMD</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>{insert_version}</version>
     </dependency>
 </dependencies>
 
