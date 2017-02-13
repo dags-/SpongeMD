@@ -165,17 +165,15 @@ Parameter | Permission | Description
 `gray` or `7` | `markdown.colors.gray` | allow use of gray
 `green` or `a` | `markdown.colors.green` | allow use of green
 `light_purple` or `d` | `markdown.colors.light_purple` | allow use of light_purple
-`none` | `markdown.colors.none` | allow use of none
 `red` or `c` | `markdown.colors.red` | allow use of red
-`reset` | `markdown.colors.reset` | allow use of reset
 `white` or `f` | `markdown.colors.white` | allow use of white
 `yellow` or `e` | `markdown.colors.yellow` | allow use of yellow
 `bold` or `l` | `markdown.styles.bold` | allow use of bold
 `italic` or `o` | `markdown.styles.italic` | allow use of italic
 `obfuscated` or `k` | `markdown.styles.obfuscated` | allow use of obfuscated
-`reset` or `r` | `markdown.styles.reset` | allow use of reset
 `yellow` or `e` | `markdown.styles.strikethrough` | allow use of strikethrough
 `underline` or `n` | `markdown.styles.underline` |  allow use of underline
+`reset` or `r` | `markdown.format.reset` | allow use of reset
 `//<command>` | `markdown.actions.command.run` | allow use of run command action
 `/<command>` | `markdown.actions.command.suggest` | allow use of suggest command action
 `[param](content)` | `markdown.actions.text.show` | allow use of show text action
