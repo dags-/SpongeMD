@@ -111,7 +111,7 @@ Parameter | Description | Example
 ---|---|---
 color | represented by the [color name or formatting code](http://minecraft.gamepedia.com/Formatting_codes) | `green` or `a`
 style | represented by the [style name or formatting code](http://minecraft.gamepedia.com/Formatting_codes) | `bold` or `l`
-show text | represented by a Markdown statement | `[yellow](this the hover text!)`
+show text | represented by a Markdown statement | `[yellow](hover text!)`
 suggest command | represented by a string starting with a single forward-slash | `/command`
 run command | represented by a string starting with two forward-slashes | `//command arg`
 open url | represented by a url | `https://address.com`
@@ -119,7 +119,7 @@ insert text | represented by any other plain text string | `some plain text`
 
 #### Content
 The content is the visible text to which color, style, and action parameters will be applied.  
-Content can include nested statements that have different parameters applied to the surround text.  
+Content can include nested statements that have different parameters applied to them than the surrounding text.  
 Notation characters (such as an open bracket '[') should be back-slash escaped `\[`, or encapsulated within
  [backticks](http://superuser.com/questions/254076/how-do-i-type-the-tick-and-backtick-characters-on-windows) `` ` ``
  to tell the parser to render it as normal text rather than to interpret as part of a statement.

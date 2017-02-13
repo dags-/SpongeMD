@@ -35,7 +35,10 @@ abstract class MDParam {
     static Map<String, TextColor> colors() {
         if (MDParam.colors.isEmpty()) {
             Map<String, TextColor> colors = new HashMap<>();
-            Sponge.getRegistry().getAllOf(TextColor.class).forEach(color -> colors.put(color.getId().toLowerCase(), color));
+            Sponge.getRegistry().getAllOf(TextColor.class).stream()
+                    .filter(color -> color != TextColors.RESET && color != TextColors.NONE)
+                    .forEach(color -> colors.put(color.getId().toLowerCase(), color));
+
             colors.put("a", TextColors.GREEN);
             colors.put("b", TextColors.AQUA);
             colors.put("c", TextColors.AQUA);
@@ -60,13 +63,15 @@ abstract class MDParam {
     static Map<String, TextStyle.Base> styles() {
         if (MDParam.styles.isEmpty()) {
             Map<String, TextStyle.Base> styles = new HashMap<>();
-            Sponge.getRegistry().getAllOf(TextStyle.Base.class).forEach(style -> styles.put(style.getId().toLowerCase(), style));
+            Sponge.getRegistry().getAllOf(TextStyle.Base.class).stream()
+                    .filter(style -> style != TextStyles.NONE && style != TextStyles.RESET)
+                    .forEach(style -> styles.put(style.getId().toLowerCase(), style));
+
             styles.put("k", TextStyles.OBFUSCATED);
             styles.put("l", TextStyles.BOLD);
             styles.put("m", TextStyles.STRIKETHROUGH);
             styles.put("n", TextStyles.UNDERLINE);
             styles.put("o", TextStyles.ITALIC);
-            styles.put("r", TextStyles.RESET);
             MDParam.styles = styles;
         }
         return MDParam.styles;
@@ -87,6 +92,10 @@ abstract class MDParam {
         TextStyle style = styles().get(id);
         if (style != null) {
             return new StyleParam(style);
+        }
+
+        if (id.equals("reset") || id.equals("r")) {
+            return new ResetParam();
         }
 
         if (in.startsWith("//")) {
@@ -117,6 +126,20 @@ abstract class MDParam {
 
         @Override
         void apply(Text.Builder builder) {}
+    }
+
+    private static class ResetParam extends MDParam {
+
+        @Override
+        public boolean test(MarkdownSpec spec) {
+            return spec.allowReset();
+        }
+
+        @Override
+        public void apply(Text.Builder builder) {
+            builder.color(TextColors.RESET);
+            builder.style(TextStyles.RESET);
+        }
     }
 
     private static class ColorParam extends MDParam {

@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableSet;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColor;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyle;
+import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.text.serializer.TextParseException;
 import org.spongepowered.api.text.serializer.TextSerializer;
 
@@ -21,6 +23,7 @@ public final class MarkdownSpec implements TextSerializer {
     private static final String TEXT_INSERT = "markdown.actions.text.insert";
     private static final String TEXT_SHOW = "markdown.actions.text.show";
     private static final String URL_OPEN = "markdown.actions.url.open";
+    private static final String RESET = "markdown.format.reset";
 
     private static String forStyle(TextStyle.Base style) {
         return "markdown.styles." + style.getId().toLowerCase();
@@ -31,6 +34,7 @@ public final class MarkdownSpec implements TextSerializer {
     }
 
     private final boolean url;
+    private final boolean reset;
     private final boolean showText;
     private final boolean insertText;
     private final boolean runCommand;
@@ -41,6 +45,7 @@ public final class MarkdownSpec implements TextSerializer {
 
     private MarkdownSpec(Builder builder) {
         this.url = builder.openUrl;
+        this.reset = builder.reset;
         this.showText = builder.showText;
         this.insertText = builder.insertText;
         this.runCommand = builder.runCommand;
@@ -104,6 +109,10 @@ public final class MarkdownSpec implements TextSerializer {
         return url;
     }
 
+    boolean allowReset() {
+        return reset;
+    }
+
     boolean allowShowText() {
         return showText;
     }
@@ -141,14 +150,22 @@ public final class MarkdownSpec implements TextSerializer {
         MDParam.colors().values().stream()
                 .filter(color -> subject.hasPermission(MarkdownSpec.forColor(color)))
                 .forEach(builder::allow);
+
         MDParam.styles().values().stream()
                 .filter(style -> subject.hasPermission(MarkdownSpec.forStyle(style)))
                 .forEach(builder::allow);
+
         builder.suggestCommand = subject.hasPermission(MarkdownSpec.COMMAND_SUGGEST);
         builder.runCommand = subject.hasPermission(MarkdownSpec.COMMAND_RUN);
         builder.insertText = subject.hasPermission(MarkdownSpec.TEXT_INSERT);
         builder.showText = subject.hasPermission(MarkdownSpec.TEXT_SHOW);
         builder.openUrl = subject.hasPermission(MarkdownSpec.URL_OPEN);
+
+        // Accept any form of 'reset'
+        builder.reset = subject.hasPermission(MarkdownSpec.RESET)
+                || subject.hasPermission(MarkdownSpec.forColor(TextColors.RESET))
+                || subject.hasPermission(MarkdownSpec.forStyle(TextStyles.RESET));
+
         return new MarkdownSpec(builder);
     }
 
@@ -160,6 +177,7 @@ public final class MarkdownSpec implements TextSerializer {
 
         private final Set<TextColor> colors = new HashSet<>();
         private final Set<TextStyle> styles = new HashSet<>();
+        private boolean reset = false;
         private boolean openUrl = false;
         private boolean showText = false;
         private boolean insertText = false;
@@ -194,6 +212,7 @@ public final class MarkdownSpec implements TextSerializer {
          * @return The current MarkdownSpec.Builder
          */
         public Builder allActions() {
+            this.reset = true;
             this.openUrl = true;
             this.showText = true;
             this.insertText = true;
@@ -232,6 +251,17 @@ public final class MarkdownSpec implements TextSerializer {
          */
         public Builder url() {
             this.openUrl = true;
+            return this;
+        }
+
+        /**
+         * Enable the use of the 'Reset' TextFormat
+         * (Clears color/style formatting)
+         *
+         * @return The current MarkdownSpec.Builder
+         */
+        public Builder reset() {
+            this.reset = true;
             return this;
         }
 
