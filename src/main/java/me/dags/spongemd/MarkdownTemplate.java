@@ -39,6 +39,11 @@ public final class MarkdownTemplate {
         return renderTemplate(args);
     }
 
+    @Override
+    public String toString() {
+        return template;
+    }
+
     ArgBuilder withUnchecked(Map<?, ?> args) {
         return new ArgBuilder(args);
     }
