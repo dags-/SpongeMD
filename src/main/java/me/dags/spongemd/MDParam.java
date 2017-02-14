@@ -27,7 +27,15 @@ abstract class MDParam {
 
     private static final String URL = "((ht|f)tp(s?):\\/\\/|www\\.)(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)";
     private static final Pattern URL_PATTERN = Pattern.compile(URL, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-    private static final MDParam EMPTY = new Empty();
+    static final MDParam EMPTY = new MDParam() {
+        @Override
+        boolean test(MarkdownSpec spec) {
+            return false;
+        }
+
+        @Override
+        void apply(Text.Builder builder) {}
+    };
 
     private static Map<String, TextColor> colors = Collections.emptyMap();
     private static Map<String, TextStyle.Base> styles = Collections.emptyMap();
@@ -116,16 +124,6 @@ abstract class MDParam {
         }
 
         return new InsertText(in);
-    }
-
-    private static class Empty extends MDParam {
-        @Override
-        boolean test(MarkdownSpec spec) {
-            return false;
-        }
-
-        @Override
-        void apply(Text.Builder builder) {}
     }
 
     private static class ResetParam extends MDParam {

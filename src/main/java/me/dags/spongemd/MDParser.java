@@ -4,20 +4,32 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextParseException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author dags <dags@dags.me>
  */
 class MDParser {
 
+    static final Map<?, ?> EMPTY = Collections.EMPTY_MAP;
+
     private final String input;
     private final MarkdownSpec spec;
+    private final Map<?, ?> arguments;
     private int pos = -1;
 
-    MDParser(String input, MarkdownSpec spec) {
-        this.input = input;
+    MDParser(MarkdownSpec spec, String input) {
         this.spec = spec;
+        this.input = input;
+        this.arguments = EMPTY;
+    }
+
+    MDParser(MarkdownSpec spec, String input, Map<?, ?> arguments) {
+        this.spec = spec;
+        this.input = input;
+        this.arguments = arguments.isEmpty() ? EMPTY : arguments;
     }
 
     private boolean hasNext() {
@@ -45,7 +57,7 @@ class MDParser {
     }
 
     Text parse() {
-        MDBuilder builder = new MDBuilder();
+        MDBuilder builder = new MDBuilder(arguments);
         boolean quoted = false;
         boolean escaped = false;
 
@@ -53,6 +65,7 @@ class MDParser {
             char c = next();
             if (!escaped) {
                 if (c == '`') {
+                    builder.setQuoted(true);
                     quoted = !quoted;
                     continue;
                 }
@@ -68,6 +81,7 @@ class MDParser {
                         continue;
                     }
                     if (escaped = c == '\\') {
+                        builder.setEscaped(true);
                         continue;
                     }
                 }
@@ -111,7 +125,7 @@ class MDParser {
     }
 
     private MDParam nextParam() {
-        StringBuilder builder = new StringBuilder();
+        MDBuilder builder = new MDBuilder(arguments);
         boolean quoted = false;
         boolean escaped = false;
 
@@ -122,6 +136,7 @@ class MDParser {
                 if (peek == '`') {
                     quoted = !quoted;
                     next();
+                    builder.setQuoted(quoted);
                     continue;
                 }
 
@@ -137,20 +152,21 @@ class MDParser {
                         return MDParam.of(parseStatement());
                     }
                     if (escaped = peek == '\\') {
+                        builder.setEscaped(true);
                         next();
                         continue;
                     }
                 }
             }
 
-            escaped = false;
             builder.append(next());
+            escaped = false;
         }
-        return MDParam.of(builder.toString());
+        return MDParam.of(builder.string());
     }
 
     private Text.Builder nextContent() {
-        MDBuilder builder = new MDBuilder();
+        MDBuilder builder = new MDBuilder(arguments);
         boolean quoted = false;
         boolean escaped = false;
 
@@ -160,6 +176,7 @@ class MDParser {
                 if (peek == '`') {
                     quoted = !quoted;
                     next();
+                    builder.setQuoted(quoted);
                     continue;
                 }
 
@@ -174,14 +191,15 @@ class MDParser {
                         continue;
                     }
                     if (escaped = peek == '\\') {
+                        builder.setEscaped(true);
                         next();
                         continue;
                     }
                 }
             }
 
-            escaped = false;
             builder.append(next());
+            escaped = false;
         }
 
         return builder.plain();

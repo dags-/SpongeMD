@@ -18,20 +18,7 @@ import java.util.Set;
  */
 public final class MarkdownSpec implements TextSerializer {
 
-    private static final String COMMAND_SUGGEST = "markdown.actions.command.suggest";
-    private static final String COMMAND_RUN = "markdown.actions.command.run";
-    private static final String TEXT_INSERT = "markdown.actions.text.insert";
-    private static final String TEXT_SHOW = "markdown.actions.text.show";
-    private static final String URL_OPEN = "markdown.actions.url.open";
-    private static final String RESET = "markdown.format.reset";
-
-    private static String forStyle(TextStyle.Base style) {
-        return "markdown.styles." + style.getId().toLowerCase();
-    }
-
-    private static String forColor(TextColor color) {
-        return "markdown.colors." + color.getId().toLowerCase();
-    }
+    private static final MarkdownPerms DEFAULTS = MarkdownPerms.builder().build();
 
     private final boolean url;
     private final boolean reset;
@@ -55,14 +42,18 @@ public final class MarkdownSpec implements TextSerializer {
         this.writer = new MDWriter(this);
     }
 
+    public MarkdownTemplate template(String input) {
+        return new MarkdownTemplate(this, input);
+    }
+
     /**
-     * Render a given String into a formatted Text object
+     * Render a SpongeMD string to a formatted Text
      *
      * @param input The input String written in the Markdown-like notation
      * @return A formatted Text object including Colors, Styles, Actions enabled in the Spec
      */
     public Text render(String input) {
-        return deserialize(input);
+        return new MDParser(this, input).parse();
     }
 
     /**
@@ -72,7 +63,7 @@ public final class MarkdownSpec implements TextSerializer {
      * @return A String representation of the given Text object written in the Markdown-like notation
      */
     public String write(Text text) {
-        return serialize(text);
+        return writer.write(text);
     }
 
     /**
@@ -83,7 +74,7 @@ public final class MarkdownSpec implements TextSerializer {
      */
     @Override
     public String serialize(Text text) {
-        return writer.write(text);
+        return write(text);
     }
 
     /**
@@ -94,7 +85,7 @@ public final class MarkdownSpec implements TextSerializer {
      */
     @Override
     public Text deserialize(String input) throws TextParseException {
-        return new MDParser(input, this).parse();
+        return render(input);
     }
 
     boolean allow(TextColor color) {
@@ -139,32 +130,45 @@ public final class MarkdownSpec implements TextSerializer {
     }
 
     /**
-     * Create a new MarkdownSpec based on the permissions of a given Subject
+     * Create a new MarkdownSpec based on the permissions of a given Subject using the default markdown permissions
      * Formatting options will be skipped where the Subject does not have permission to use them
      *
      * @param subject The Subject to test for formatting permissions
      * @return The newly created MarkdownSpec
      */
     public static MarkdownSpec create(Subject subject) {
+        return create(subject, DEFAULTS);
+    }
+
+    /**
+     * Create a new MarkdownSpec based on the permissions of a given Subject using the provided custom permissions
+     * Formatting options will be skipped where the Subject does not have permission to use them
+     *
+     * @param subject The Subject to test for formatting permissions
+     * @param perms The MarkdownPerms to test the Subject for
+     * @return The newly created MarkdownSpec
+     */
+    public static MarkdownSpec create(Subject subject, MarkdownPerms perms) {
         Builder builder = new Builder();
+
         MDParam.colors().values().stream()
-                .filter(color -> subject.hasPermission(MarkdownSpec.forColor(color)))
+                .filter(color -> subject.hasPermission(perms.getColorNode(color)))
                 .forEach(builder::allow);
 
         MDParam.styles().values().stream()
-                .filter(style -> subject.hasPermission(MarkdownSpec.forStyle(style)))
+                .filter(style -> subject.hasPermission(perms.getStyleNode(style)))
                 .forEach(builder::allow);
 
-        builder.suggestCommand = subject.hasPermission(MarkdownSpec.COMMAND_SUGGEST);
-        builder.runCommand = subject.hasPermission(MarkdownSpec.COMMAND_RUN);
-        builder.insertText = subject.hasPermission(MarkdownSpec.TEXT_INSERT);
-        builder.showText = subject.hasPermission(MarkdownSpec.TEXT_SHOW);
-        builder.openUrl = subject.hasPermission(MarkdownSpec.URL_OPEN);
+        builder.suggestCommand = subject.hasPermission(perms.getSuggestCommand());
+        builder.runCommand = subject.hasPermission(perms.getRunCommand());
+        builder.insertText = subject.hasPermission(perms.getInsertText());
+        builder.showText = subject.hasPermission(perms.getShowText());
+        builder.openUrl = subject.hasPermission(perms.getOpenUrl());
 
         // Accept any form of 'reset'
-        builder.reset = subject.hasPermission(MarkdownSpec.RESET)
-                || subject.hasPermission(MarkdownSpec.forColor(TextColors.RESET))
-                || subject.hasPermission(MarkdownSpec.forStyle(TextStyles.RESET));
+        builder.reset = subject.hasPermission(perms.getReset())
+                || subject.hasPermission(perms.getColorNode(TextColors.RESET))
+                || subject.hasPermission(perms.getStyleNode(TextStyles.RESET));
 
         return new MarkdownSpec(builder);
     }

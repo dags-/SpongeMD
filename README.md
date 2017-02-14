@@ -5,6 +5,9 @@ _This is a library, not a standalone plugin!_
 ### Contents
 1. [Dependencies](#dependencies)
 2. [Usage](#usage)
+ 1. [Deserializing](#renderingdeserialization)
+ 2. [Serializing](#writingserialization)
+ 3. [Templating](#templating)
 3. [Specification](#notation-specification)
 4. [Examples](#examples)
 5. [Permissions](#permissions)
@@ -89,6 +92,52 @@ public void example(Text text, MarkdownSpec spec) {
     System.out.println(example0);
 }
 ```
+#### Templating
+SpongeMD implements a basic templating system that allows you to define preset SpongeMD strings containing named
+ variables which get replaced by the arguments you provide each time you render the string to a Text.
+ 
+Variables are defined by encapsulating the variable name inside braces: `{my_variable}`  
+Templates are created using the MarkdownSpec object:
+
+``` java
+MarkdownTemplate template = spec.template("[red](Some variable = {my_variable})";
+```
+
+To use the template, arguments are provided via the Builder-like method `.with("<variable_name>", <variable_value>)`  
+For example:
+
+``` java
+MarkdownTemplate template = spec.template("[red](Some variable = {my_variable})";
+Text text = template.with("my_variable", 12345).render();
+// Produces 'Some variable = 12345' in red text
+```
+
+Templates themselves can be provided as named arguments and called within other templates. Template variables are
+ defined by prefixing a colon (`:`) to the variable name: `{:my_template_variable}`.  
+This template will inherit the same set of arguments provided to the containing template during the render method.
+
+A specific argument can be passed to the template by stating it's name _before_ the template definition: `{variable:template}`.
+Arguments passed to a template in this way are named `.` (referenced as `{.}` in the target template).  
+Array and Iterable arguments are iterated over and each child element is passed to the template individually.  
+If the argument happens to be a Map, each key/value pair is passed to the template with the names `.key` & `.value`.
+
+``` java
+private static void templates(CommandSource source, List<String> list, Map<Object, Object> map) {
+    MarkdownSpec spec = MarkdownSpec.create();
+    
+    // Create a template that passes the elements of a list to a second template which defines how they be formatted
+    MarkdownTemplate listTemplate = spec.template("Example #1: [green](List: {list:element})");
+    MarkdownTemplate elementFormat = spec.template("[blue]({.}, )");
+    Text text1 = listTemplate.with("element", elementFormat).with("list", list).render();
+    source.sendMessage(text1);
+    
+    // Create a template that passes the key/value pairs of a map to a second template that defines how they be formatted
+    MarkdownTemplate mapTemplate = spec.template("Example #2: [red](Map: {map:entry}");
+    MarkdownTemplate entryFormat = spec.template("[yellow]({.key}={.value}; )");
+    Text text2 = mapTemplate.with("entry", entryFormat).with("map", map).render();
+    source.sendMessage(text2);
+}
+```
 
 ====
 
@@ -96,7 +145,7 @@ public void example(Text text, MarkdownSpec spec) {
 The notation takes inspiration from the Markdown link format.  
 A typical SpongeMD string looks like the following:
 
-`[parameters...](content)`
+`[arguments...](content)`
 
 <sub>_Unlike Markdown links, the visible portion is placed on the right-hand side of the statement, within the braces
  `(..)`._</sub>
@@ -118,8 +167,8 @@ open url | represented by a url | `https://address.com`
 insert text | represented by any other plain text string | `some plain text`
 
 #### Content
-The content is the visible text to which color, style, and action parameters will be applied.  
-Content can include nested statements that have different parameters applied to them than the surrounding text.  
+The content is the visible text to which color, style, and action arguments will be applied.  
+Content can include nested statements that have different arguments applied to them than the surrounding text.  
 Notation characters (such as an open bracket '[') should be back-slash escaped `\[`, or encapsulated within
  [backticks](http://superuser.com/questions/254076/how-do-i-type-the-tick-and-backtick-characters-on-windows) `` ` ``
  to tell the parser to render it as normal text rather than to interpret as part of a statement.
