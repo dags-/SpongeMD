@@ -3,6 +3,7 @@ package me.dags.spongemd;
 import com.google.common.collect.ImmutableSet;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.TextRepresentable;
 import org.spongepowered.api.text.format.TextColor;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyle;
@@ -28,7 +29,6 @@ public final class MarkdownSpec implements TextSerializer {
     private final boolean suggestCommand;
     private final Set<TextColor> colors;
     private final Set<TextStyle> styles;
-    private final MDWriter writer;
 
     private MarkdownSpec(Builder builder) {
         this.url = builder.openUrl;
@@ -39,7 +39,6 @@ public final class MarkdownSpec implements TextSerializer {
         this.suggestCommand = builder.suggestCommand;
         this.colors = ImmutableSet.copyOf(builder.colors);
         this.styles = ImmutableSet.copyOf(builder.styles);
-        this.writer = new MDWriter(this);
     }
 
     public MarkdownTemplate template(String input) {
@@ -62,8 +61,18 @@ public final class MarkdownSpec implements TextSerializer {
      * @param text The formatted Text object
      * @return A String representation of the given Text object written in the Markdown-like notation
      */
-    public String write(Text text) {
-        return writer.write(text);
+    public String write(TextRepresentable text) {
+        return new MDWriter(this, true).write(text.toText());
+    }
+
+    /**
+     * Write a given Text object to the Markdown-like notation without escaping Markdown-like notation
+     *
+     * @param text The formatted Text object
+     * @return A String representation of the given Text object written in the Markdown-like notation
+     */
+    public String writeUnescaped(TextRepresentable text) {
+        return new MDWriter(this, false).write(text.toText());
     }
 
     /**

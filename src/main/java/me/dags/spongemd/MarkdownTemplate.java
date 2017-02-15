@@ -1,9 +1,20 @@
 package me.dags.spongemd;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import org.spongepowered.api.service.context.Context;
+import org.spongepowered.api.service.permission.Subject;
+import org.spongepowered.api.service.permission.SubjectData;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.TextElement;
+import org.spongepowered.api.text.TextRepresentable;
+import org.spongepowered.api.text.TextTemplate;
+import org.spongepowered.api.text.transform.SimpleTextFormatter;
+import org.spongepowered.api.text.transform.SimpleTextTemplateApplier;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author dags <dags@dags.me>
@@ -18,25 +29,45 @@ public final class MarkdownTemplate {
         this.template = template;
     }
 
-    public ArgBuilder with(String key, String template) {
-        checkKey(key);
-        return new ArgBuilder().with(key, spec.template(template));
+    /**
+     * Create a new TemplateApplier for this MarkdownTemplate
+     *
+     * @return The newly created Applier
+     */
+    public Applier applier() {
+        return new Applier(this);
     }
 
-    public ArgBuilder with(String key, Object arg) {
-        checkKey(key);
-        return new ArgBuilder().with(key, arg);
+    /**
+     * Create a new TemplateApplier with the given key/value pair
+     *
+     * @param key The named variable used in the template
+     * @param value The value that this variable should be assigned
+     * @return The newly created Applier
+     */
+    public Applier with(String key, Object value) {
+        return applier().with(key, value);
     }
 
-    public ArgBuilder with(Map<String, Object> args) {
-        for (String key : args.keySet()) {
-            checkKey(key);
-        }
-        return new ArgBuilder(args);
+    /**
+     * Create a new TemplateApplier with the given map of key/value pairs
+     *
+     * @param map The named variable used in the template
+     * @return The newly created Applier
+     */
+    public Applier with(Map<String, Object> map) {
+        return applier().with(map);
     }
 
-    public Text render(Map<String, Object> args) {
-        return renderTemplate(args);
+    /**
+     * Create a new TemplateApplier with the Permission Options from the given Subject and Contents
+     *
+     * @param subject The Subject whose permission options will be used
+     * @param contexts The Contexts used to determine which Options are applicable
+     * @return The new created Applier
+     */
+    public Applier withOptions(Subject subject, Set<Context> contexts) {
+        return applier().withOptions(subject, contexts);
     }
 
     @Override
@@ -44,59 +75,141 @@ public final class MarkdownTemplate {
         return template;
     }
 
-    ArgBuilder withUnchecked(Map<?, ?> args) {
-        return new ArgBuilder(args);
-    }
-
     Text renderTemplate(Map<?, ?> args) {
         return new MDParser(spec, template, args).parse();
     }
 
-    public class ArgBuilder {
+    public class Applier extends SimpleTextTemplateApplier {
 
-        private final Map<String, Object> args = new HashMap<>();
+        private final MarkdownTemplate template;
+        private final Map<String, Object> arguments = new HashMap<>();
 
-        private ArgBuilder() {}
+        Applier(MarkdownTemplate template) {
+            this.template = template;
+        }
 
-        ArgBuilder(Map<?, ?> args) {
-            for (Map.Entry<?, ?> e : args.entrySet()) {
-                this.args.put(e.getKey().toString(), e.getValue());
+        /**
+         * @return Any TextElement objects stored in this Applier. Note that this Applier may hold other object types
+         *          that will not be returned in the resulting map
+         */
+        @Override
+        public ImmutableMap<String, TextElement> getParameters() {
+            ImmutableMap.Builder<String, TextElement> map = ImmutableMap.builder();
+            arguments.entrySet().stream()
+                    .filter(entry -> TextElement.class.isInstance(entry.getValue()))
+                    .forEach(entry -> map.put(entry.getKey(), TextElement.class.cast(entry.getValue())));
+            return map.build();
+        }
+
+        /**
+         * As base method but applies Markdown rendering to any TextRepresentables
+         * @param key The argument name
+         * @param value The value for the argument
+         */
+        @Override
+        public void setParameter(String key, TextElement value) {
+            validKey(key);
+
+            if (value instanceof TextRepresentable) {
+                String md = spec.writeUnescaped((TextRepresentable) value);
+                value = spec.render(md);
             }
+
+            this.arguments.put(key, value);
         }
 
-        ArgBuilder with(Object child) {
-            this.args.put(".", child);
-            return this;
+        /**
+         * @return Always returns an empty template
+         */
+        @Override
+        public TextTemplate getTemplate() {
+            return TextTemplate.EMPTY;
         }
 
-        ArgBuilder with(Map.Entry<?, ?> entry) {
-            this.args.put(".key", entry.getKey());
-            this.args.put(".value", entry.getValue());
-            return this;
-        }
+        /**
+         * @param template Does not store a TextTemplate, value is always ignored
+         */
+        @Override
+        public void setTemplate(TextTemplate template) {}
 
-        public ArgBuilder with(String key, Object arg) {
-            checkKey(key);
-            args.put(key, arg);
-            return this;
-        }
-
-        public ArgBuilder with(String key, String template) {
-            checkKey(key);
-            args.put(key, MarkdownTemplate.this.spec.template(template));
-            return this;
+        @Override
+        public Text toText() {
+            return render();
         }
 
         public Text render() {
-            return MarkdownTemplate.this.renderTemplate(args);
+            return template.renderTemplate(arguments);
         }
 
-        Text renderTemplate() {
-            return MarkdownTemplate.this.renderTemplate(args);
+        Applier with(Object object) {
+            arguments.put(".", object);
+            return this;
+        }
+
+        Applier with(Map.Entry<?, ?> entry) {
+            arguments.put(".key", entry.getKey());
+            arguments.put(".value", entry.getValue());
+            return this;
+        }
+
+        /**
+         * Provide a key/value pair to be used by the template
+         *
+         * @param key The named variable used in the template
+         * @param value The value that this variable should be assigned
+         * @return The current Applier
+         */
+        public Applier with(String key, Object value) {
+            validKey(key);
+            this.arguments.put(key, value);
+            return this;
+        }
+
+        /**
+         * Provide a map of key/value pairs to be used by the template
+         *
+         * @param map A map of key/values
+         * @return The current Applier
+         */
+        public Applier with(Map<?, ?> map) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                validKey(entry.getKey().toString());
+                arguments.put(entry.getKey().toString(), entry.getValue());
+            }
+            return this;
+        }
+
+        /**
+         * Provide a Subject whose Permission Options should be used by the template
+         *
+         * @param subject The Subject whose Permission Options will be used
+         * @param contexts The Contexts used to determine which Options are applicable
+         * @return The current Applier
+         */
+        public Applier withOptions(Subject subject, Set<Context> contexts) {
+            SubjectData data = subject.getSubjectData();
+            return with(data.getOptions(contexts));
+        }
+
+        /**
+         * Inherit arguments from a TextFormatter partition
+         *
+         * @param partition The partition to inherit arguments from
+         * @return The current Applier
+         */
+        public Applier inherit(SimpleTextFormatter partition) {
+            for (SimpleTextTemplateApplier applier : partition.getAll()) {
+                for (Map.Entry<String, TextElement> e : applier.getParameters().entrySet()) {
+                    setParameter(e.getKey(), e.getValue());
+                }
+            }
+            return this;
         }
     }
 
-    private static void checkKey(String key) {
+    private static void validKey(String key) {
+        Preconditions.checkNotNull(key);
+
         if (key.equals(".") || key.equals(".key") || key.equals(".value")) {
             String error = String.format("Key: '%s' is a reserved key name!", key);
             throw new UnsupportedOperationException(error);

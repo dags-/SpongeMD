@@ -124,7 +124,7 @@ class MDBuilder {
             } else if (value.getClass().isArray()) {
                 appendArray(template, value);
             } else {
-                Text text = template.withUnchecked(arguments).with(value).render();
+                Text text = template.applier().with(arguments).with(value).render();
                 append(text);
             }
         }
@@ -145,31 +145,31 @@ class MDBuilder {
     }
 
     private void appendIterable(MarkdownTemplate template, Object value) {
-        MarkdownTemplate.ArgBuilder templateArgs = template.withUnchecked(arguments);
+        MarkdownTemplate.Applier applier = template.applier().with(arguments);
         Iterable iterable = Iterable.class.cast(value);
         for (Object child : iterable) {
-            Text text = templateArgs.with(child).render();
+            Text text = applier.with(child).render();
             append(text);
         }
     }
 
     private void appendArray(MarkdownTemplate template, Object value) {
-        MarkdownTemplate.ArgBuilder templateArgs = template.withUnchecked(arguments);
+        MarkdownTemplate.Applier applier = template.applier().with(arguments);
         int length = Array.getLength(value);
         for (int i = 0; i < length; i++) {
             Object child = Array.get(value, i);
             if (child != null) {
-                Text text = templateArgs.with(child).render();
+                Text text = applier.with(child).render();
                 append(text);
             }
         }
     }
 
     private void appendMap(MarkdownTemplate template, Object value) {
-        MarkdownTemplate.ArgBuilder templateArgs = template.withUnchecked(arguments);
+        MarkdownTemplate.Applier applier = template.applier().with(arguments);
         Map<?, ?> map = Map.class.cast(value);
         for (Map.Entry<?, ?> entry : map.entrySet()) {
-            Text text = templateArgs.with(entry).render();
+            Text text = applier.with(entry).render();
             append(text);
         }
     }

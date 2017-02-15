@@ -15,9 +15,11 @@ import java.util.Optional;
 class MDWriter {
 
     private final MarkdownSpec spec;
+    private final boolean escaping;
 
-    MDWriter(MarkdownSpec spec) {
+    MDWriter(MarkdownSpec spec, boolean escaping) {
         this.spec = spec;
+        this.escaping = escaping;
     }
 
     String write(Text textIn) {
@@ -142,13 +144,21 @@ class MDWriter {
     }
 
     private void appendSafeArg(StringBuilder builder, String text) {
-        text = text.replace("`", "\\`");
-        String escape = text.matches(".*[\\\\].*") ? "`" : "";
-        builder.append(escape).append(text).append(escape);
+        if (escaping) {
+            text = text.replace("`", "\\`");
+            String escape = text.matches(".*[\\\\].*") ? "`" : "";
+            builder.append(escape).append(text).append(escape);
+        } else {
+            builder.append(text);
+        }
     }
 
     private void appendSafeContent(StringBuilder builder, String text) {
-        String escape = text.matches(".*[\\[)].*") ? "`" : "";
-        builder.append(escape).append(text.replace("`", "\\`")).append(escape);
+        if (escaping) {
+            String escape = text.matches(".*[\\[)].*") ? "`" : "";
+            builder.append(escape).append(text.replace("`", "\\`")).append(escape);
+        } else {
+            builder.append(text);
+        }
     }
 }

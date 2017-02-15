@@ -105,7 +105,7 @@ Templates are created using the MarkdownSpec object:
 MarkdownTemplate template = spec.template("[red](Some variable = {my_variable})";
 ```
 
-To use the template, arguments are provided via the Builder-like method `.with("<variable_name>", <variable_value>)`  
+To use the template, arguments are provided via the chaining method `.with("<variable_name>", <variable_value>)`  
 For example:
 
 ``` java
