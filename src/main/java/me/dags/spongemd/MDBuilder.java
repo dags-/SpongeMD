@@ -14,6 +14,7 @@ class MDBuilder {
     private final LiteralText.Builder builder = (LiteralText.Builder) LiteralText.builder();
     private final StringBuilder stringBuilder = new StringBuilder(128);
     private final StringBuilder argBuilder = new StringBuilder(16);
+    private final MarkdownSpec markdownSpec;
     private final Map<?, ?> arguments;
     private final boolean argsEnabled;
 
@@ -22,8 +23,9 @@ class MDBuilder {
     private boolean quoted = false;
     private boolean empty = true;
 
-    MDBuilder(Map<?, ?> arguments) {
+    MDBuilder(MarkdownSpec markdownSpec, Map<?, ?> arguments) {
         this.arguments = arguments;
+        this.markdownSpec = markdownSpec;
         this.argsEnabled = arguments != MDParser.EMPTY;
     }
 
@@ -105,9 +107,14 @@ class MDBuilder {
 
     private void appendTemplate(String templateKey) {
         Object template = arguments.get(templateKey);
-        if (template != null && MarkdownTemplate.class.isInstance(template)) {
-            Text text = MarkdownTemplate.class.cast(template).renderTemplate(arguments);
-            append(text);
+        if (template != null) {
+            if (MarkdownTemplate.class.isInstance(template)) {
+                Text text = MarkdownTemplate.class.cast(template).renderTemplate(arguments);
+                append(text);
+            } else if (String.class.isInstance(template)) {
+                Text text = markdownSpec.template((String) template).renderTemplate(arguments);
+                append(text);
+            }
         }
     }
 
@@ -115,17 +122,25 @@ class MDBuilder {
         Object templ = arguments.get(templateKey);
         Object value = arguments.get(valueKey);
 
-        if (value != null && templ != null && MarkdownTemplate.class.isInstance(templ)) {
-            MarkdownTemplate template = MarkdownTemplate.class.cast(templ);
-            if (Map.class.isInstance(value)) {
-                appendMap(template, value);
-            } else if (Iterable.class.isInstance(value)) {
-                appendIterable(template, value);
-            } else if (value.getClass().isArray()) {
-                appendArray(template, value);
-            } else {
-                Text text = template.applier().with(arguments).with(value).render();
-                append(text);
+        if (value != null && templ != null) {
+            MarkdownTemplate template = null;
+            if (MarkdownTemplate.class.isInstance(templ)) {
+                template = MarkdownTemplate.class.cast(templ);
+            } else if (String.class.isInstance(templ)) {
+                template = markdownSpec.template((String) templ);
+            }
+
+            if (template != null) {
+                if (Map.class.isInstance(value)) {
+                    appendMap(template, value);
+                } else if (Iterable.class.isInstance(value)) {
+                    appendIterable(template, value);
+                } else if (value.getClass().isArray()) {
+                    appendArray(template, value);
+                } else {
+                    Text text = template.applier().with(arguments).with(value).render();
+                    append(text);
+                }
             }
         }
     }

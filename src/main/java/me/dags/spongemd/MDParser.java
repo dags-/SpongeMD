@@ -57,7 +57,7 @@ class MDParser {
     }
 
     Text parse() {
-        MDBuilder builder = new MDBuilder(arguments);
+        MDBuilder builder = new MDBuilder(spec, arguments);
         boolean quoted = false;
         boolean escaped = false;
 
@@ -125,7 +125,7 @@ class MDParser {
     }
 
     private MDParam nextParam() {
-        MDBuilder builder = new MDBuilder(arguments);
+        MDBuilder builder = new MDBuilder(spec, arguments);
         boolean quoted = false;
         boolean escaped = false;
 
@@ -166,7 +166,7 @@ class MDParser {
     }
 
     private Text.Builder nextContent() {
-        MDBuilder builder = new MDBuilder(arguments);
+        MDBuilder builder = new MDBuilder(spec, arguments);
         boolean quoted = false;
         boolean escaped = false;
 
