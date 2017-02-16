@@ -107,12 +107,12 @@ class MDWriter {
             } else if (click.get() instanceof ClickAction.RunCommand) {
                 ClickAction.RunCommand action = (ClickAction.RunCommand) click.get();
                 sb.append(comma ? "," : "");
-                appendSafeArg(sb, "//" + action.getResult());
+                appendSafeArg(sb, "/" + action.getResult());
                 comma = true;
             } else if (click.get() instanceof ClickAction.SuggestCommand) {
                 ClickAction.SuggestCommand action = (ClickAction.SuggestCommand) click.get();
                 sb.append(comma ? "," : "");
-                appendSafeArg(sb, "/" + action.getResult());
+                appendSafeArg(sb, action.getResult());
                 comma = true;
             }
         }
