@@ -39,6 +39,26 @@ public final class MarkdownTemplate {
     }
 
     /**
+     * Create a new TemplateApplier with the value reference '{.}'
+     *
+     * @param value The value assigned to '{.}'
+     * @return The newly created Applier
+     */
+    public Applier with(Object value) {
+        return applier().with(value);
+    }
+
+    /**
+     * Create a new TemplateApplier with the key/value pair referenced '{.key}' & '{.value}'
+     *
+     * @param entry The key/value pair assigned to '{.key}' & '{.value}'
+     * @return The newly created Applier
+     */
+    public Applier with(Map.Entry<?, ?> entry) {
+        return applier().with(entry);
+    }
+
+    /**
      * Create a new TemplateApplier with the given key/value pair
      *
      * @param key The named variable used in the template
@@ -141,12 +161,12 @@ public final class MarkdownTemplate {
             return template.renderTemplate(arguments);
         }
 
-        Applier with(Object object) {
+        public Applier with(Object object) {
             arguments.put(".", object);
             return this;
         }
 
-        Applier with(Map.Entry<?, ?> entry) {
+        public Applier with(Map.Entry<?, ?> entry) {
             arguments.put(".key", entry.getKey());
             arguments.put(".value", entry.getValue());
             return this;
