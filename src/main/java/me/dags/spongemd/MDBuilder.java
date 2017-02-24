@@ -138,7 +138,7 @@ class MDBuilder {
                 } else if (value.getClass().isArray()) {
                     appendArray(template, value);
                 } else {
-                    Text text = template.applier().with(arguments).with(value).render();
+                    Text text = template.applier().withUnchecked(arguments).with(value).render();
                     append(text);
                 }
             }
@@ -160,7 +160,7 @@ class MDBuilder {
     }
 
     private void appendIterable(MarkdownTemplate template, Object value) {
-        MarkdownTemplate.Applier applier = template.applier().with(arguments);
+        MarkdownTemplate.Applier applier = template.applier().withUnchecked(arguments);
         Iterable iterable = Iterable.class.cast(value);
         for (Object child : iterable) {
             Text text = applier.with(child).render();
@@ -169,7 +169,7 @@ class MDBuilder {
     }
 
     private void appendArray(MarkdownTemplate template, Object value) {
-        MarkdownTemplate.Applier applier = template.applier().with(arguments);
+        MarkdownTemplate.Applier applier = template.applier().withUnchecked(arguments);
         int length = Array.getLength(value);
         for (int i = 0; i < length; i++) {
             Object child = Array.get(value, i);
@@ -181,7 +181,7 @@ class MDBuilder {
     }
 
     private void appendMap(MarkdownTemplate template, Object value) {
-        MarkdownTemplate.Applier applier = template.applier().with(arguments);
+        MarkdownTemplate.Applier applier = template.applier().withUnchecked(arguments);
         Map<?, ?> map = Map.class.cast(value);
         for (Map.Entry<?, ?> entry : map.entrySet()) {
             Text text = applier.with(entry).render();

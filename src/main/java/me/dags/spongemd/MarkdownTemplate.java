@@ -225,6 +225,13 @@ public final class MarkdownTemplate {
             }
             return this;
         }
+
+        Applier withUnchecked(Map<?, ?> map) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                arguments.put(entry.getKey().toString(), entry.getValue());
+            }
+            return this;
+        }
     }
 
     private static void validKey(String key) {
