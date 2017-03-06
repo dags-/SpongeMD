@@ -1,6 +1,11 @@
-package me.dags.spongemd;
+package me.dags.textmu;
 
 import com.google.common.base.Preconditions;
+import com.google.common.reflect.TypeToken;
+import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.Subject;
@@ -15,9 +20,15 @@ import java.util.Map;
 /**
  * @author dags <dags@dags.me>
  */
-public class MarkdownPerms {
+public class MarkupPerms {
 
+    public static final TypeToken<MarkupPerms> TYPE_TOKEN = TypeToken.of(MarkupPerms.class);
+    public static final TypeSerializer<MarkupPerms> TYPE_SERIALIZER = new Serializer();
     public static final TextTemplate.Arg PERMISSION_ID = TextTemplate.arg("id").build();
+
+    static {
+        TypeSerializers.getDefaultSerializers().registerType(TYPE_TOKEN, TYPE_SERIALIZER);
+    }
 
     private final String colorRoot;
     private final String styleRoot;
@@ -28,7 +39,7 @@ public class MarkdownPerms {
     private final String openUrl;
     private final String reset;
 
-    private MarkdownPerms(Builder builder) {
+    private MarkupPerms(Builder builder) {
         this.colorRoot = builder.colorRoot;
         this.styleRoot = builder.styleRoot;
         this.suggestCommand = builder.suggestCommand;
@@ -71,8 +82,8 @@ public class MarkdownPerms {
         return reset;
     }
 
-    public MarkdownSpec createSpec(Subject subject) {
-        return MarkdownSpec.create(subject, this);
+    public MarkupSpec createSpec(Subject subject) {
+        return MarkupSpec.create(subject, this);
     }
 
     public void registerPermissions(Object plugin) {
@@ -84,7 +95,7 @@ public class MarkdownPerms {
     public void registerColorPermissions(Object plugin, TextTemplate template) {
         PermissionService service = Sponge.getServiceManager().provideUnchecked(PermissionService.class);
         Map<String, Object> map = new HashMap<>();
-        MDParam.colors().values().forEach(color -> {
+        MUParam.colors().values().forEach(color -> {
             String permission = getColorNode(color);
             map.put(PERMISSION_ID.getName(), color.getId());
             registerPermission(service, plugin, permission, template.apply(map).build());
@@ -94,7 +105,7 @@ public class MarkdownPerms {
     public void registerStylePermissions(Object plugin, TextTemplate template) {
         PermissionService service = Sponge.getServiceManager().provideUnchecked(PermissionService.class);
         Map<String, Object> map = new HashMap<>();
-        MDParam.styles().values().forEach(style -> {
+        MUParam.styles().values().forEach(style -> {
             String permission = getStyleNode(style);
             map.put(PERMISSION_ID.getName(), style.getId());
             registerPermission(service, plugin, permission, template.apply(map).build());
@@ -136,14 +147,14 @@ public class MarkdownPerms {
 
     public static class Builder {
 
-        private String colorRoot = "markdown.colors";
-        private String styleRoot = "markdown.styles";
-        private String suggestCommand = "markdown.actions.command.suggest";
-        private String runCommand = "markdown.actions.command.run";
-        private String insertText = "markdown.actions.text.insert";
-        private String showText = "markdown.actions.text.show";
-        private String openUrl = "markdown.actions.url.open";
-        private String reset = "markdown.format.reset";
+        private String colorRoot = "markup.colors";
+        private String styleRoot = "markup.styles";
+        private String suggestCommand = "markup.actions.command.suggest";
+        private String runCommand = "markup.actions.command.run";
+        private String insertText = "markup.actions.text.insert";
+        private String showText = "markup.actions.text.show";
+        private String openUrl = "markup.actions.url.open";
+        private String reset = "markup.format.reset";
 
         private Builder(){}
 
@@ -203,14 +214,43 @@ public class MarkdownPerms {
             return this;
         }
 
-        public MarkdownPerms build() {
-            return new MarkdownPerms(this);
+        public MarkupPerms build() {
+            return new MarkupPerms(this);
         }
 
         private static void checkLength(String node) {
             if (node.length() < 2) {
                 throw new UnsupportedOperationException("Invalid permission node: " + node);
             }
+        }
+    }
+
+    private static class Serializer implements TypeSerializer<MarkupPerms> {
+
+        @Override
+        public MarkupPerms deserialize(TypeToken<?> type, ConfigurationNode node) throws ObjectMappingException {
+            Builder builder = new Builder();
+            builder.reset = node.getNode("reset").getString(builder.reset);
+            builder.openUrl = node.getNode("open_url").getString(builder.openUrl);
+            builder.showText = node.getNode("show_text").getString(builder.showText);
+            builder.insertText = node.getNode("insert_text").getString(builder.insertText);
+            builder.runCommand = node.getNode("run_command").getString(builder.runCommand);
+            builder.suggestCommand = node.getNode("suggest_command").getString(builder.suggestCommand);
+            builder.colorRoot = node.getNode("color_root").getString(builder.colorRoot);
+            builder.styleRoot = node.getNode("style_root").getString(builder.styleRoot);
+            return builder.build();
+        }
+
+        @Override
+        public void serialize(TypeToken<?> type, MarkupPerms perms, ConfigurationNode node) throws ObjectMappingException {
+            node.getNode("reset").setValue(perms.reset);
+            node.getNode("open_url").setValue(perms.openUrl);
+            node.getNode("show_text").setValue(perms.showText);
+            node.getNode("insert_text").setValue(perms.insertText);
+            node.getNode("run_command").setValue(perms.runCommand);
+            node.getNode("suggest_command").setValue(perms.suggestCommand);
+            node.getNode("color_root").setValue(perms.colorRoot);
+            node.getNode("style_root").setValue(perms.styleRoot);
         }
     }
 }

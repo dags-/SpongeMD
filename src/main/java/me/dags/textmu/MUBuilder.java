@@ -1,4 +1,4 @@
-package me.dags.spongemd;
+package me.dags.textmu;
 
 import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
@@ -9,12 +9,12 @@ import java.util.Map;
 /**
  * @author dags <dags@dags.me>
  */
-class MDBuilder {
+class MUBuilder {
 
     private final LiteralText.Builder builder = (LiteralText.Builder) LiteralText.builder();
     private final StringBuilder stringBuilder = new StringBuilder(128);
     private final StringBuilder argBuilder = new StringBuilder(16);
-    private final MarkdownSpec markdownSpec;
+    private final MarkupSpec markupSpec;
     private final Map<?, ?> arguments;
     private final boolean argsEnabled;
 
@@ -23,10 +23,10 @@ class MDBuilder {
     private boolean quoted = false;
     private boolean empty = true;
 
-    MDBuilder(MarkdownSpec markdownSpec, Map<?, ?> arguments) {
+    MUBuilder(MarkupSpec markupSpec, Map<?, ?> arguments) {
         this.arguments = arguments;
-        this.markdownSpec = markdownSpec;
-        this.argsEnabled = arguments != MDParser.EMPTY;
+        this.markupSpec = markupSpec;
+        this.argsEnabled = arguments != MUParser.EMPTY;
     }
 
     boolean isEmpty() {
@@ -41,7 +41,7 @@ class MDBuilder {
         this.quoted = quoted;
     }
 
-    MDBuilder append(char c) {
+    MUBuilder append(char c) {
         if (escaped || quoted) {
             stringBuilder.append(c);
             escaped = false;
@@ -64,7 +64,7 @@ class MDBuilder {
         return this;
     }
 
-    MDBuilder append(Text other) {
+    MUBuilder append(Text other) {
         if (buildingArg) {
             stringBuilder.append(argBuilder);
             argBuilder.setLength(0);
@@ -76,7 +76,7 @@ class MDBuilder {
         return this;
     }
 
-    private MDBuilder appendString() {
+    private MUBuilder appendString() {
         if (stringBuilder.length() > 0) {
             if (empty) {
                 builder.content(stringBuilder.toString());
@@ -108,11 +108,11 @@ class MDBuilder {
     private void appendTemplate(String templateKey) {
         Object template = arguments.get(templateKey);
         if (template != null) {
-            if (MarkdownTemplate.class.isInstance(template)) {
-                Text text = MarkdownTemplate.class.cast(template).renderTemplate(arguments);
+            if (MarkupTemplate.class.isInstance(template)) {
+                Text text = MarkupTemplate.class.cast(template).renderTemplate(arguments);
                 append(text);
             } else if (String.class.isInstance(template)) {
-                Text text = markdownSpec.template((String) template).renderTemplate(arguments);
+                Text text = markupSpec.template((String) template).renderTemplate(arguments);
                 append(text);
             }
         }
@@ -123,11 +123,11 @@ class MDBuilder {
         Object value = arguments.get(valueKey);
 
         if (value != null && templ != null) {
-            MarkdownTemplate template = null;
-            if (MarkdownTemplate.class.isInstance(templ)) {
-                template = MarkdownTemplate.class.cast(templ);
+            MarkupTemplate template = null;
+            if (MarkupTemplate.class.isInstance(templ)) {
+                template = MarkupTemplate.class.cast(templ);
             } else if (String.class.isInstance(templ)) {
-                template = markdownSpec.template((String) templ);
+                template = markupSpec.template((String) templ);
             }
 
             if (template != null) {
@@ -150,8 +150,8 @@ class MDBuilder {
             if (Text.class.isInstance(value)) {
                 Text text = Text.class.cast(value);
                 append(text);
-            } else if (MarkdownTemplate.class.isInstance(value)) {
-                Text text = MarkdownTemplate.class.cast(value).renderTemplate(arguments);
+            } else if (MarkupTemplate.class.isInstance(value)) {
+                Text text = MarkupTemplate.class.cast(value).renderTemplate(arguments);
                 append(text);
             } else {
                 stringBuilder.append(value);
@@ -159,8 +159,8 @@ class MDBuilder {
         }
     }
 
-    private void appendIterable(MarkdownTemplate template, Object value) {
-        MarkdownTemplate.Applier applier = template.applier().withUnchecked(arguments);
+    private void appendIterable(MarkupTemplate template, Object value) {
+        MarkupTemplate.Applier applier = template.applier().withUnchecked(arguments);
         Iterable iterable = Iterable.class.cast(value);
         for (Object child : iterable) {
             Text text = applier.with(child).render();
@@ -168,8 +168,8 @@ class MDBuilder {
         }
     }
 
-    private void appendArray(MarkdownTemplate template, Object value) {
-        MarkdownTemplate.Applier applier = template.applier().withUnchecked(arguments);
+    private void appendArray(MarkupTemplate template, Object value) {
+        MarkupTemplate.Applier applier = template.applier().withUnchecked(arguments);
         int length = Array.getLength(value);
         for (int i = 0; i < length; i++) {
             Object child = Array.get(value, i);
@@ -180,8 +180,8 @@ class MDBuilder {
         }
     }
 
-    private void appendMap(MarkdownTemplate template, Object value) {
-        MarkdownTemplate.Applier applier = template.applier().withUnchecked(arguments);
+    private void appendMap(MarkupTemplate template, Object value) {
+        MarkupTemplate.Applier applier = template.applier().withUnchecked(arguments);
         Map<?, ?> map = Map.class.cast(value);
         for (Map.Entry<?, ?> entry : map.entrySet()) {
             Text text = applier.with(entry).render();

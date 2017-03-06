@@ -1,4 +1,4 @@
-# SpongeMD
+# TextMU
 A small, Markdown inspired, TextSerializer for SpongeAPI  
 _This is a library, not a standalone plugin!_
 
@@ -13,7 +13,7 @@ _This is a library, not a standalone plugin!_
 5. [Permissions](#permissions)
 
 ### Dependencies
-See releases for the [latest version](https://github.com/dags-/SpongeMD/releases/latest).
+See releases for the [latest version](https://github.com/dags-/TextMU/releases/latest).
 
 ##### Gradle
 ```
@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     ...
-    compile ('com.github.dags-:SpongeMD:{insert_version}') {
+    compile ('com.github.dags-:TextMU:{insert_version}') {
         exclude module: 'spongeapi'
     }
 }
@@ -45,7 +45,7 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>com.github.dags-</groupId>
-        <artifactId>SpongeMD</artifactId>
+        <artifactId>TextMU</artifactId>
         <version>{insert_version}</version>
     </dependency>
 </dependencies>
@@ -57,23 +57,23 @@ dependencies {
 
 ### Usage
 #### Rendering/Deserialization
-To parse SpongeMD strings you must obtain a MarkdownSpec object.  
+To parse TextMU strings you must obtain a MarkupSpec object.  
 Depending on what the Spec allows, colors/styles/actions can be stripped out of the resulting Text object.    
-As shown in the following example, there are three different ways of obtaining a new MarkdownSpec, each offering
+As shown in the following example, there are three different ways of obtaining a new MarkupSpec, each offering
  different ways of restricting formatting/actions.
 
 ``` java
 public void example(Player player) {
     // All formatting colors/styles/actions allowed
-    Text example0 = MarkdownSpec.create().render("[green,underline](this is some green & underlined text!)");
+    Text example0 = MarkupSpec.create().render("[green,underline](this is some green & underlined text!)");
     player.sendMessage(example0);
 
     // Restrict colors/styles/actions to those allowed by the Player's permissions
-    Text example1 = MarkdownSpec.create(player).render("[https://github.com](Click this text to open github)");
+    Text example1 = MarkupSpec.create(player).render("[https://github.com](Click this text to open github)");
     player.sendMessage(example1);
 
     // Restrict colors/styles/actions to those set by the builder
-    Text example2 = MarkdownSpec.builder()
+    Text example2 = MarkupSpec.builder()
             .allow(TextColors.GREEN)
             .allow(TextStyles.ITALIC)
             .build()
@@ -82,34 +82,34 @@ public void example(Player player) {
 }
 ```
 #### Writing/Serialization
-MarkdownSpecs can also be used to write SpongeMD strings from Text objects.  
-The same color/style/action rules are applied by the Spec when writing the SpongeMD string as they are when rendering
+MarkupSpecs can also be used to write TextMU strings from Text objects.  
+The same color/style/action rules are applied by the Spec when writing the TextMU string as they are when rendering
  them.
 
 ``` java
-public void example(Text text, MarkdownSpec spec) {
-    // Write the given text to a SpongeMD string.
+public void example(Text text, MarkupSpec spec) {
+    // Write the given text to a TextMU string.
     // Formatting/Actions may be removed depending on what the Spec allows
     String exmaple0 = spec.write(text);
     System.out.println(example0);
 }
 ```
 #### Templating
-SpongeMD implements a basic templating system that allows you to define preset SpongeMD strings containing named
+TextMU implements a basic templating system that allows you to define preset TextMU strings containing named
  variables which get replaced by the arguments you provide each time you render the string to a Text.
  
 Variables are defined by encapsulating the variable name inside braces: `{my_variable}`  
-Templates are created using the MarkdownSpec object:
+Templates are created using the MarkupSpec object:
 
 ``` java
-MarkdownTemplate template = spec.template("[red](Some variable = {my_variable})";
+MarkupTemplate template = spec.template("[red](Some variable = {my_variable})";
 ```
 
 To use the template, arguments are provided via the chaining method `.with("<variable_name>", <variable_value>)`  
 For example:
 
 ``` java
-MarkdownTemplate template = spec.template("[red](Some variable = {my_variable})";
+MarkupTemplate template = spec.template("[red](Some variable = {my_variable})";
 Text text = template.with("my_variable", 12345).render();
 // Produces 'Some variable = 12345' in red text
 ```
@@ -125,17 +125,17 @@ If the argument happens to be a Map, each key/value pair is passed to the templa
 
 ``` java
 private static void templates(CommandSource source, List<String> list, Map<Object, Object> map) {
-    MarkdownSpec spec = MarkdownSpec.create();
+    MarkupSpec spec = MarkupSpec.create();
     
     // Create a template that passes the elements of a list to a second template which defines how they be formatted
-    MarkdownTemplate listTemplate = spec.template("Example #1: [green](List: {list:element})");
-    MarkdownTemplate elementFormat = spec.template("[blue]({.}, )");
+    MarkupTemplate listTemplate = spec.template("Example #1: [green](List: {list:element})");
+    MarkupTemplate elementFormat = spec.template("[blue]({.}, )");
     Text text1 = listTemplate.with("element", elementFormat).with("list", list).render();
     source.sendMessage(text1);
     
     // Create a template that passes the key/value pairs of a map to a second template that defines how they be formatted
-    MarkdownTemplate mapTemplate = spec.template("Example #2: [red](Map: {map:entry}");
-    MarkdownTemplate entryFormat = spec.template("[yellow]({.key}={.value}; )");
+    MarkupTemplate mapTemplate = spec.template("Example #2: [red](Map: {map:entry}");
+    MarkupTemplate entryFormat = spec.template("[yellow]({.key}={.value}; )");
     Text text2 = mapTemplate.with("entry", entryFormat).with("map", map).render();
     source.sendMessage(text2);
 }
@@ -145,7 +145,7 @@ private static void templates(CommandSource source, List<String> list, Map<Objec
 
 ### Notation Specification
 The notation takes inspiration from the Markdown link format.  
-A typical SpongeMD string looks like the following:
+A typical TextMU string looks like the following:
 
 `[arguments...](content)`
 
@@ -162,7 +162,7 @@ Parameter | Description | Example
 ---|---|---
 color | represented by the [color name or formatting code](http://minecraft.gamepedia.com/Formatting_codes) | `green` or `a`
 style | represented by the [style name or formatting code](http://minecraft.gamepedia.com/Formatting_codes) | `bold` or `l`
-show text | represented by a Markdown statement | `[yellow](hover text!)`
+show text | represented by a Markup statement | `[yellow](hover text!)`
 suggest command | represented by a string starting with a single forward-slash | `/command`
 run command | represented by a string starting with two forward-slashes | `//command arg`
 open url | represented by a url | `https://address.com`
@@ -201,30 +201,30 @@ Short-hand |
 ### Permissions
 Parameter | Permission | Description
 :---|:---|:---
-`aqua` or `b` | `markdown.colors.aqua` | allow use of aqua
-`black` or `0` '| `markdown.colors.black` | allow use of black
-`blue` or `9` | `markdown.colors.blue` | allow use of blue
-`dark_aqua` or `3` | `markdown.colors.dark_aqua` | allow use of dark_aqua
-`dark_blue` or `1` | `markdown.colors.dark_blue` | allow use of dark_blue
-`dark_gray` or `8` | `markdown.colors.dark_gray` | allow use of dark_gray
-`dark_green` or `2` | `markdown.colors.dark_green` | allow use of dark_green
-`dark_purple` or `5` | `markdown.colors.dark_purple` | allow use of dark_purple
-`dark_red` or `4` | `markdown.colors.dark_red` | allow use of dark_red
-`gold` or `6` | `markdown.colors.gold` | allow use of gold
-`gray` or `7` | `markdown.colors.gray` | allow use of gray
-`green` or `a` | `markdown.colors.green` | allow use of green
-`light_purple` or `d` | `markdown.colors.light_purple` | allow use of light_purple
-`red` or `c` | `markdown.colors.red` | allow use of red
-`white` or `f` | `markdown.colors.white` | allow use of white
-`yellow` or `e` | `markdown.colors.yellow` | allow use of yellow
-`bold` or `l` | `markdown.styles.bold` | allow use of bold
-`italic` or `o` | `markdown.styles.italic` | allow use of italic
-`obfuscated` or `k` | `markdown.styles.obfuscated` | allow use of obfuscated
-`yellow` or `e` | `markdown.styles.strikethrough` | allow use of strikethrough
-`underline` or `n` | `markdown.styles.underline` |  allow use of underline
-`reset` or `r` | `markdown.format.reset` | allow use of reset
-`//<command>` | `markdown.actions.command.run` | allow use of run command action
-`/<command>` | `markdown.actions.command.suggest` | allow use of suggest command action
-`[param](content)` | `markdown.actions.text.show` | allow use of show text action
-`<plain text>` | `markdown.actions.text.insert` | allow use of insert text action
-`http://url.com` | `markdown.actions.url.open` | allow use of open url action
+`aqua` or `b` | `markup.colors.aqua` | allow use of aqua
+`black` or `0` '| `markup.colors.black` | allow use of black
+`blue` or `9` | `markup.colors.blue` | allow use of blue
+`dark_aqua` or `3` | `markup.colors.dark_aqua` | allow use of dark_aqua
+`dark_blue` or `1` | `markup.colors.dark_blue` | allow use of dark_blue
+`dark_gray` or `8` | `markup.colors.dark_gray` | allow use of dark_gray
+`dark_green` or `2` | `markup.colors.dark_green` | allow use of dark_green
+`dark_purple` or `5` | `markup.colors.dark_purple` | allow use of dark_purple
+`dark_red` or `4` | `markup.colors.dark_red` | allow use of dark_red
+`gold` or `6` | `markup.colors.gold` | allow use of gold
+`gray` or `7` | `markup.colors.gray` | allow use of gray
+`green` or `a` | `markup.colors.green` | allow use of green
+`light_purple` or `d` | `markup.colors.light_purple` | allow use of light_purple
+`red` or `c` | `markup.colors.red` | allow use of red
+`white` or `f` | `markup.colors.white` | allow use of white
+`yellow` or `e` | `markup.colors.yellow` | allow use of yellow
+`bold` or `l` | `markup.styles.bold` | allow use of bold
+`italic` or `o` | `markup.styles.italic` | allow use of italic
+`obfuscated` or `k` | `markup.styles.obfuscated` | allow use of obfuscated
+`yellow` or `e` | `markup.styles.strikethrough` | allow use of strikethrough
+`underline` or `n` | `markup.styles.underline` |  allow use of underline
+`reset` or `r` | `markup.format.reset` | allow use of reset
+`//<command>` | `markup.actions.command.run` | allow use of run command action
+`/<command>` | `markup.actions.command.suggest` | allow use of suggest command action
+`[param](content)` | `markup.actions.text.show` | allow use of show text action
+`<plain text>` | `markup.actions.text.insert` | allow use of insert text action
+`http://url.com` | `markup.actions.url.open` | allow use of open url action

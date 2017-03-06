@@ -1,4 +1,4 @@
-package me.dags.spongemd;
+package me.dags.textmu;
 
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
@@ -12,12 +12,12 @@ import java.util.Optional;
 /**
  * @author dags <dags@dags.me>
  */
-class MDWriter {
+class MUWriter {
 
-    private final MarkdownSpec spec;
+    private final MarkupSpec spec;
     private final boolean escaping;
 
-    MDWriter(MarkdownSpec spec, boolean escaping) {
+    MUWriter(MarkupSpec spec, boolean escaping) {
         this.spec = spec;
         this.escaping = escaping;
     }

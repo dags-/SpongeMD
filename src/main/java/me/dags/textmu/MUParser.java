@@ -1,4 +1,4 @@
-package me.dags.spongemd;
+package me.dags.textmu;
 
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextParseException;
@@ -11,22 +11,22 @@ import java.util.Map;
 /**
  * @author dags <dags@dags.me>
  */
-class MDParser {
+class MUParser {
 
     static final Map<?, ?> EMPTY = Collections.EMPTY_MAP;
 
     private final String input;
-    private final MarkdownSpec spec;
+    private final MarkupSpec spec;
     private final Map<?, ?> arguments;
     private int pos = -1;
 
-    MDParser(MarkdownSpec spec, String input) {
+    MUParser(MarkupSpec spec, String input) {
         this.spec = spec;
         this.input = input;
         this.arguments = EMPTY;
     }
 
-    MDParser(MarkdownSpec spec, String input, Map<?, ?> arguments) {
+    MUParser(MarkupSpec spec, String input, Map<?, ?> arguments) {
         this.spec = spec;
         this.input = input;
         this.arguments = arguments.isEmpty() ? EMPTY : arguments;
@@ -57,7 +57,7 @@ class MDParser {
     }
 
     Text parse() {
-        MDBuilder builder = new MDBuilder(spec, arguments);
+        MUBuilder builder = new MUBuilder(spec, arguments);
         boolean quoted = false;
         boolean escaped = false;
 
@@ -95,11 +95,11 @@ class MDParser {
     private Text parseStatement() {
         int start = pos;
         int end = input.length();
-        List<MDParam> params = parseParams();
+        List<MUParam> params = parseParams();
         if (hasNext()) {
             if (next() == '(') {
                 Text.Builder content = nextContent();
-                for (MDParam param : params) {
+                for (MUParam param : params) {
                     if (param.test(spec)) {
                         param.apply(content);
                     }
@@ -111,10 +111,10 @@ class MDParser {
         return Text.of(input.substring(start, end));
     }
 
-    private List<MDParam> parseParams() {
-        List<MDParam> params = new ArrayList<>();
+    private List<MUParam> parseParams() {
+        List<MUParam> params = new ArrayList<>();
         while (hasNext()) {
-            MDParam param = nextParam();
+            MUParam param = nextParam();
             params.add(param);
             if (peek() == ']') {
                 next();
@@ -124,8 +124,8 @@ class MDParser {
         return params;
     }
 
-    private MDParam nextParam() {
-        MDBuilder builder = new MDBuilder(spec, arguments);
+    private MUParam nextParam() {
+        MUBuilder builder = new MUBuilder(spec, arguments);
         boolean quoted = false;
         boolean escaped = false;
 
@@ -149,7 +149,7 @@ class MDParser {
                         break;
                     }
                     if (peek == '[' && skip(1)) {
-                        return MDParam.of(parseStatement());
+                        return MUParam.of(parseStatement());
                     }
                     if (escaped = peek == '\\') {
                         builder.setEscaped(true);
@@ -162,11 +162,11 @@ class MDParser {
             builder.append(next());
             escaped = false;
         }
-        return MDParam.of(builder.string());
+        return MUParam.of(builder.string());
     }
 
     private Text.Builder nextContent() {
-        MDBuilder builder = new MDBuilder(spec, arguments);
+        MUBuilder builder = new MUBuilder(spec, arguments);
         boolean quoted = false;
         boolean escaped = false;
 

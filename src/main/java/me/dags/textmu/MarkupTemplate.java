@@ -1,7 +1,12 @@
-package me.dags.spongemd;
+package me.dags.textmu;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.reflect.TypeToken;
+import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.permission.Subject;
@@ -20,18 +25,25 @@ import java.util.Set;
 /**
  * @author dags <dags@dags.me>
  */
-public final class MarkdownTemplate {
+public final class MarkupTemplate {
 
-    private final MarkdownSpec spec;
+    public static final TypeToken<MarkupTemplate> TYPE_TOKEN = TypeToken.of(MarkupTemplate.class);
+    public static final TypeSerializer<MarkupTemplate> TYPE_SERIALIZER = new Serializer();
+
+    static {
+        TypeSerializers.getDefaultSerializers().registerType(TYPE_TOKEN, TYPE_SERIALIZER);
+    }
+
+    private final MarkupSpec spec;
     private final String template;
 
-    MarkdownTemplate(MarkdownSpec spec, String template) {
+    MarkupTemplate(MarkupSpec spec, String template) {
         this.spec = spec;
         this.template = template;
     }
 
     /**
-     * Create a new TemplateApplier for this MarkdownTemplate
+     * Create a new TemplateApplier for this MarkupTemplate
      *
      * @return The newly created Applier
      */
@@ -107,15 +119,24 @@ public final class MarkdownTemplate {
     }
 
     Text renderTemplate(Map<?, ?> args) {
-        return new MDParser(spec, template, args).parse();
+        return new MUParser(spec, template, args).parse();
+    }
+
+    private static void validKey(String key) {
+        Preconditions.checkNotNull(key);
+
+        if (key.equals(".") || key.equals(".key") || key.equals(".value")) {
+            String error = String.format("Key: '%s' is a reserved key name!", key);
+            throw new UnsupportedOperationException(error);
+        }
     }
 
     public class Applier extends SimpleTextTemplateApplier {
 
-        private final MarkdownTemplate template;
+        private final MarkupTemplate template;
         private final Map<String, Object> arguments = new HashMap<>();
 
-        Applier(MarkdownTemplate template) {
+        Applier(MarkupTemplate template) {
             this.template = template;
         }
 
@@ -133,7 +154,7 @@ public final class MarkdownTemplate {
         }
 
         /**
-         * As base method but applies Markdown rendering to any TextRepresentables
+         * As base method but applies Markup rendering to any TextRepresentables
          * @param key The argument name
          * @param value The value for the argument
          */
@@ -255,12 +276,19 @@ public final class MarkdownTemplate {
         }
     }
 
-    private static void validKey(String key) {
-        Preconditions.checkNotNull(key);
+    private static class Serializer implements TypeSerializer<MarkupTemplate> {
 
-        if (key.equals(".") || key.equals(".key") || key.equals(".value")) {
-            String error = String.format("Key: '%s' is a reserved key name!", key);
-            throw new UnsupportedOperationException(error);
+        @Override
+        public MarkupTemplate deserialize(TypeToken<?> type, ConfigurationNode node) throws ObjectMappingException {
+            MarkupSpec spec = node.getValue(MarkupSpec.TYPE_TOKEN);
+            String template = node.getNode("template").getString("");
+            return spec.template(template);
+        }
+
+        @Override
+        public void serialize(TypeToken<?> type, MarkupTemplate template, ConfigurationNode node) throws ObjectMappingException {
+            node.setValue(MarkupSpec.TYPE_TOKEN, template.spec);
+            node.getNode("template").setValue(template.template);
         }
     }
 }

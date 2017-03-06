@@ -1,4 +1,4 @@
-package me.dags.spongemd;
+package me.dags.textmu;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.Text;
@@ -19,17 +19,17 @@ import java.util.regex.Pattern;
 /**
  * @author dags <dags@dags.me>
  */
-abstract class MDParam {
+abstract class MUParam {
 
-    abstract boolean test(MarkdownSpec spec);
+    abstract boolean test(MarkupSpec spec);
 
     abstract void apply(Text.Builder builder);
 
     private static final String URL = "((ht|f)tp(s?):\\/\\/|www\\.)(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)";
     private static final Pattern URL_PATTERN = Pattern.compile(URL, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-    static final MDParam EMPTY = new MDParam() {
+    static final MUParam EMPTY = new MUParam() {
         @Override
-        boolean test(MarkdownSpec spec) {
+        boolean test(MarkupSpec spec) {
             return false;
         }
 
@@ -41,7 +41,7 @@ abstract class MDParam {
     private static Map<String, TextStyle.Base> styles = Collections.emptyMap();
 
     static Map<String, TextColor> colors() {
-        if (MDParam.colors.isEmpty()) {
+        if (MUParam.colors.isEmpty()) {
             Map<String, TextColor> colors = new HashMap<>();
             Sponge.getRegistry().getAllOf(TextColor.class).stream()
                     .filter(color -> color != TextColors.RESET && color != TextColors.NONE)
@@ -63,13 +63,13 @@ abstract class MDParam {
             colors.put("7", TextColors.GRAY);
             colors.put("8", TextColors.DARK_GRAY);
             colors.put("9", TextColors.BLUE);
-            MDParam.colors = colors;
+            MUParam.colors = colors;
         }
-        return MDParam.colors;
+        return MUParam.colors;
     }
 
     static Map<String, TextStyle.Base> styles() {
-        if (MDParam.styles.isEmpty()) {
+        if (MUParam.styles.isEmpty()) {
             Map<String, TextStyle.Base> styles = new HashMap<>();
             Sponge.getRegistry().getAllOf(TextStyle.Base.class).stream()
                     .filter(style -> style != TextStyles.NONE && style != TextStyles.RESET)
@@ -80,16 +80,16 @@ abstract class MDParam {
             styles.put("m", TextStyles.STRIKETHROUGH);
             styles.put("n", TextStyles.UNDERLINE);
             styles.put("o", TextStyles.ITALIC);
-            MDParam.styles = styles;
+            MUParam.styles = styles;
         }
-        return MDParam.styles;
+        return MUParam.styles;
     }
 
-    static MDParam of(Text text) {
+    static MUParam of(Text text) {
         return new HoverText(text);
     }
 
-    static MDParam of(String in) {
+    static MUParam of(String in) {
         String id = in.trim().toLowerCase();
 
         TextColor color = colors().get(id);
@@ -119,17 +119,17 @@ abstract class MDParam {
             try {
                 return new OpenUrl(new URL(in.matches("^https?://.*$") ? in : "http://" + in));
             } catch (MalformedURLException e) {
-                return MDParam.EMPTY;
+                return MUParam.EMPTY;
             }
         }
 
         return new InsertText(in);
     }
 
-    private static class ResetParam extends MDParam {
+    private static class ResetParam extends MUParam {
 
         @Override
-        public boolean test(MarkdownSpec spec) {
+        public boolean test(MarkupSpec spec) {
             return spec.allowReset();
         }
 
@@ -140,7 +140,7 @@ abstract class MDParam {
         }
     }
 
-    private static class ColorParam extends MDParam {
+    private static class ColorParam extends MUParam {
 
         private final TextColor color;
 
@@ -149,7 +149,7 @@ abstract class MDParam {
         }
 
         @Override
-        public boolean test(MarkdownSpec spec) {
+        public boolean test(MarkupSpec spec) {
             return spec.allow(color);
         }
 
@@ -159,7 +159,7 @@ abstract class MDParam {
         }
     }
 
-    private static class StyleParam extends MDParam {
+    private static class StyleParam extends MUParam {
 
         private final TextStyle style;
 
@@ -168,7 +168,7 @@ abstract class MDParam {
         }
 
         @Override
-        public boolean test(MarkdownSpec spec) {
+        public boolean test(MarkupSpec spec) {
             return spec.allow(style);
         }
 
@@ -178,7 +178,7 @@ abstract class MDParam {
         }
     }
 
-    private static class RunCommand extends MDParam {
+    private static class RunCommand extends MUParam {
 
         private final String command;
 
@@ -187,7 +187,7 @@ abstract class MDParam {
         }
 
         @Override
-        public boolean test(MarkdownSpec spec) {
+        public boolean test(MarkupSpec spec) {
             return spec.allowRunCommand();
         }
 
@@ -197,7 +197,7 @@ abstract class MDParam {
         }
     }
 
-    private static class SuggestCommand extends MDParam {
+    private static class SuggestCommand extends MUParam {
 
         private final String command;
 
@@ -206,7 +206,7 @@ abstract class MDParam {
         }
 
         @Override
-        public boolean test(MarkdownSpec spec) {
+        public boolean test(MarkupSpec spec) {
             return spec.allowSuggestCommand();
         }
 
@@ -216,7 +216,7 @@ abstract class MDParam {
         }
     }
 
-    private static class OpenUrl extends MDParam {
+    private static class OpenUrl extends MUParam {
 
         private final URL url;
 
@@ -225,7 +225,7 @@ abstract class MDParam {
         }
 
         @Override
-        public boolean test(MarkdownSpec spec) {
+        public boolean test(MarkupSpec spec) {
             return spec.allowUrl();
         }
 
@@ -235,7 +235,7 @@ abstract class MDParam {
         }
     }
 
-    private static class HoverText extends MDParam {
+    private static class HoverText extends MUParam {
 
         private final Text text;
 
@@ -244,7 +244,7 @@ abstract class MDParam {
         }
 
         @Override
-        public boolean test(MarkdownSpec spec) {
+        public boolean test(MarkupSpec spec) {
             return spec.allowShowText();
         }
 
@@ -254,7 +254,7 @@ abstract class MDParam {
         }
     }
 
-    private static class InsertText extends MDParam {
+    private static class InsertText extends MUParam {
 
         private final String text;
 
@@ -263,7 +263,7 @@ abstract class MDParam {
         }
 
         @Override
-        public boolean test(MarkdownSpec spec) {
+        public boolean test(MarkupSpec spec) {
             return spec.allowInsertText();
         }
 
