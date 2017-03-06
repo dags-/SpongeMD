@@ -2,6 +2,7 @@ package me.dags.spongemd;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectData;
@@ -88,6 +89,16 @@ public final class MarkdownTemplate {
      */
     public Applier withOptions(Subject subject, Set<Context> contexts) {
         return applier().withOptions(subject, contexts);
+    }
+
+    /**
+     * Create a new TemplateApplier with the NamedCauses from the given Cause object
+     *
+     * @param cause The Cause containing the NamedCauses to be used
+     * @return The current Applied
+     */
+    public Applier withCause(Cause cause) {
+        return applier().withCause(cause);
     }
 
     @Override
@@ -209,6 +220,16 @@ public final class MarkdownTemplate {
         public Applier withOptions(Subject subject, Set<Context> contexts) {
             SubjectData data = subject.getSubjectData();
             return with(data.getOptions(contexts));
+        }
+
+        /**
+         * Provide a Cause whose NamedCauses should be used by the template
+         *
+         * @param cause The Cause containing the NamedCauses to be used
+         * @return The current Applied
+         */
+        public Applier withCause(Cause cause) {
+            return with(cause.getNamedCauses());
         }
 
         /**
