@@ -58,7 +58,7 @@ dependencies {
 ### Usage
 #### Rendering/Deserialization
 To parse TextMU strings you must obtain a MarkupSpec object.  
-Depending on what the Spec allows, colors/styles/actions can be stripped out of the resulting Text object.    
+The Spec controls which features (colors, styles & actions) will be rendered in the output Text object.    
 As shown in the following example, there are three different ways of obtaining a new MarkupSpec, each offering
  different ways of restricting formatting/actions.
 
@@ -96,7 +96,7 @@ public void example(Text text, MarkupSpec spec) {
 ```
 #### Templating
 TextMU implements a basic templating system that allows you to define preset TextMU strings containing named
- variables which get replaced by the arguments you provide each time you render the string to a Text.
+ variables which get replaced by the arguments you provide each time you render the string to a Text object.
  
 Variables are defined by encapsulating the variable name inside braces: `{my_variable}`  
 Templates are created using the MarkupSpec object:
@@ -116,7 +116,7 @@ Text text = template.with("my_variable", 12345).render();
 
 Templates themselves can be provided as named arguments and called within other templates. Template variables are
  defined by prefixing a colon (`:`) to the variable name: `{:my_template_variable}`.  
-This template will inherit the same set of arguments provided to the containing template during the render method.
+This template will inherit the same set of arguments provided to the parent template during the render method.
 
 A specific argument can be passed to the template by stating it's name _before_ the template definition: `{variable:template}`.
 Arguments passed to a template in this way are named `.` (referenced as `{.}` in the target template).  
@@ -149,7 +149,7 @@ A typical TextMU string looks like the following:
 
 `[arguments...](content)`
 
-<sub>_Unlike Markdown links, the visible portion is placed on the right-hand side of the statement, within the braces
+<sub>_Unlike Markdown links, the visible portion is placed on the right-hand side of the statement, within the parentheses
  `(..)`._</sub>
 
 #### Parameters:
