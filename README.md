@@ -137,8 +137,8 @@ private static void templates(CommandSource source, List<String> list, Map<Objec
     source.sendMessage(text1);
     
     // Create a template that passes the key/value pairs of a map to a second template that defines how they be formatted
-    MarkupTemplate mapTemplate = spec.template("Example #2: [red](Map: {map:entry}");
-    MarkupTemplate entryFormat = spec.template("[yellow]({.key}={.value}; )");
+    MarkupTemplate mapTemplate = spec.template("Example #2: [red](Map: {map:entry:; }");
+    MarkupTemplate entryFormat = spec.template("[yellow]({.key}={.value})");
     Text text2 = mapTemplate.with("entry", entryFormat).with("map", map).render();
     source.sendMessage(text2);
 }
