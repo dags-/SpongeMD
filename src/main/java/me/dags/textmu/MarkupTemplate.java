@@ -125,7 +125,7 @@ public final class MarkupTemplate {
     private static void validKey(String key) {
         Preconditions.checkNotNull(key);
 
-        if (key.equals(".") || key.equals(".key") || key.equals(".value")) {
+        if (key.isEmpty() || !key.matches("^[a-zA-Z0-9_]*$")) {
             String error = String.format("Key: '%s' is a reserved key name!", key);
             throw new UnsupportedOperationException(error);
         }

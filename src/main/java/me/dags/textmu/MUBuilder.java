@@ -2,8 +2,10 @@ package me.dags.textmu;
 
 import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.TextRepresentable;
 
 import java.lang.reflect.Array;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -91,6 +93,7 @@ class MUBuilder {
 
     private void appendArg(String name) {
         int splitPoint = name.indexOf(":");
+        int joinPoint = name.indexOf(":", 1 + splitPoint);
 
         if (splitPoint < 0) {
             Object value = arguments.get(name);
@@ -98,10 +101,15 @@ class MUBuilder {
         } else if (splitPoint == 0) {
             String templateKey = name.substring(splitPoint + 1);
             appendTemplate(templateKey);
+        } else if (joinPoint > 0) {
+            String valueKey = name.substring(0, splitPoint);
+            String templateKey = name.substring(splitPoint + 1, joinPoint);
+            String separator = name.substring(joinPoint + 1);
+            appendTemplate(templateKey, valueKey, separator);
         } else {
             String valueKey = name.substring(0, splitPoint);
             String templateKey = name.substring(splitPoint + 1);
-            appendTemplate(templateKey, valueKey);
+            appendTemplate(templateKey, valueKey, "");
         }
     }
 
@@ -118,7 +126,7 @@ class MUBuilder {
         }
     }
 
-    private void appendTemplate(String templateKey, String valueKey) {
+    private void appendTemplate(String templateKey, String valueKey, String separator) {
         Object templ = arguments.get(templateKey);
         Object value = arguments.get(valueKey);
 
@@ -132,11 +140,11 @@ class MUBuilder {
 
             if (template != null) {
                 if (Map.class.isInstance(value)) {
-                    appendMap(template, value);
+                    appendMap(template, value, separator);
                 } else if (Iterable.class.isInstance(value)) {
-                    appendIterable(template, value);
+                    appendIterable(template, value, separator);
                 } else if (value.getClass().isArray()) {
-                    appendArray(template, value);
+                    appendArray(template, value, separator);
                 } else {
                     Text text = template.applier().withUnchecked(arguments).with(value).render();
                     append(text);
@@ -147,44 +155,50 @@ class MUBuilder {
 
     private void appendObject(Object value) {
         if (value != null) {
-            if (Text.class.isInstance(value)) {
-                Text text = Text.class.cast(value);
-                append(text);
-            } else if (MarkupTemplate.class.isInstance(value)) {
+            if (MarkupTemplate.class.isInstance(value)) {
                 Text text = MarkupTemplate.class.cast(value).renderTemplate(arguments);
                 append(text);
+            } else if (TextRepresentable.class.isInstance(value)) {
+                TextRepresentable text = TextRepresentable.class.cast(value);
+                append(text.toText());
             } else {
                 stringBuilder.append(value);
             }
         }
     }
 
-    private void appendIterable(MarkupTemplate template, Object value) {
+    private void appendIterable(MarkupTemplate template, Object value, String separator) {
         MarkupTemplate.Applier applier = template.applier().withUnchecked(arguments);
-        Iterable iterable = Iterable.class.cast(value);
-        for (Object child : iterable) {
-            Text text = applier.with(child).render();
+        Iterator iterator = Iterable.class.cast(value).iterator();
+        while (iterator.hasNext()) {
+            Object child = iterator.next();
+            Text one = applier.with(child).render();
+            Text text = !separator.isEmpty() && iterator.hasNext() ? Text.of(one, separator) : one;
             append(text);
         }
     }
 
-    private void appendArray(MarkupTemplate template, Object value) {
+    private void appendArray(MarkupTemplate template, Object value, String separator) {
         MarkupTemplate.Applier applier = template.applier().withUnchecked(arguments);
         int length = Array.getLength(value);
         for (int i = 0; i < length; i++) {
             Object child = Array.get(value, i);
             if (child != null) {
-                Text text = applier.with(child).render();
+                Text one = applier.with(child).render();
+                Text text = !separator.isEmpty() && i + 1 < length ? Text.of(one, separator) : one;
                 append(text);
             }
         }
     }
 
-    private void appendMap(MarkupTemplate template, Object value) {
+    private void appendMap(MarkupTemplate template, Object value, String separator) {
         MarkupTemplate.Applier applier = template.applier().withUnchecked(arguments);
         Map<?, ?> map = Map.class.cast(value);
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            Text text = applier.with(entry).render();
+        Iterator<? extends Map.Entry<?, ?>> iterator = map.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<?, ?> entry = iterator.next();
+            Text one = applier.with(entry).render();
+            Text text = !separator.isEmpty() && iterator.hasNext() ? Text.of(one, separator) : one;
             append(text);
         }
     }
