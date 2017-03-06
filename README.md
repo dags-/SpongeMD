@@ -119,17 +119,20 @@ Templates themselves can be provided as named arguments and called within other 
 This template will inherit the same set of arguments provided to the parent template during the render method.
 
 A specific argument can be passed to the template by stating it's name _before_ the template definition: `{variable:template}`.
-Arguments passed to a template in this way are named `.` (referenced as `{.}` in the target template).  
+Arguments passed to a template in this way are named `.` (referenced as `{.}` in the target template).
+
 Array and Iterable arguments are iterated over and each child element is passed to the template individually.  
-If the argument happens to be a Map, each key/value pair is passed to the template with the names `.key` & `.value`.
+If the argument happens to be a Map, each key/value pair is passed to the template with the names `.key` & `.value`.  
+A separator String can be inserted between each child by providing a third parameter in the template definition:
+ `{variable:template:separator}` (this is handy for rendering comma-separated lists and such).
 
 ``` java
 private static void templates(CommandSource source, List<String> list, Map<Object, Object> map) {
     MarkupSpec spec = MarkupSpec.create();
     
     // Create a template that passes the elements of a list to a second template which defines how they be formatted
-    MarkupTemplate listTemplate = spec.template("Example #1: [green](List: {list:element})");
-    MarkupTemplate elementFormat = spec.template("[blue]({.}, )");
+    MarkupTemplate listTemplate = spec.template("Example #1: [green](List: {list:element:, })");
+    MarkupTemplate elementFormat = spec.template("[blue]({.})");
     Text text1 = listTemplate.with("element", elementFormat).with("list", list).render();
     source.sendMessage(text1);
     
