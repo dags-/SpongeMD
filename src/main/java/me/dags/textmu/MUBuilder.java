@@ -32,7 +32,19 @@ class MUBuilder {
     }
 
     boolean isEmpty() {
-        return empty && stringBuilder.length() == 0;
+        return empty && stringBuilder.length() == 0 && argBuilder.length() == 0;
+    }
+
+    boolean isRaw() {
+        return empty;
+    }
+
+    boolean isQuoted() {
+        return quoted;
+    }
+
+    boolean isEscaped() {
+        return escaped;
     }
 
     void setEscaped(boolean escaped) {
@@ -205,6 +217,10 @@ class MUBuilder {
 
     String string() {
         return stringBuilder.toString();
+    }
+
+    String serialized() {
+        return markupSpec.write(build());
     }
 
     Text.Builder plain() {

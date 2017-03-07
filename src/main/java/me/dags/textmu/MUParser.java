@@ -126,21 +126,17 @@ class MUParser {
 
     private MUParam nextParam() {
         MUBuilder builder = new MUBuilder(spec, arguments);
-        boolean quoted = false;
-        boolean escaped = false;
 
         while (hasNext()) {
             char peek = peek();
-
-            if (!escaped) {
+            if (!builder.isEscaped()) {
                 if (peek == '`') {
-                    quoted = !quoted;
                     next();
-                    builder.setQuoted(quoted);
+                    builder.setQuoted(!builder.isQuoted());
                     continue;
                 }
 
-                if (!quoted) {
+                if (!builder.isQuoted()) {
                     if (peek == ']') {
                         break;
                     }
@@ -151,36 +147,36 @@ class MUParser {
                     if (peek == '[' && skip(1)) {
                         return MUParam.of(parseStatement());
                     }
-                    if (escaped = peek == '\\') {
+                    if (peek == '\\') {
                         builder.setEscaped(true);
                         next();
                         continue;
                     }
                 }
             }
-
             builder.append(next());
-            escaped = false;
         }
-        return MUParam.of(builder.string());
+
+        if (builder.isRaw()) {
+            return MUParam.of(builder.string());
+        }
+
+        // parameter is complex (may be from a template) so serialize and parse as a param
+        return new MUParser(spec, builder.serialized(), arguments).nextParam();
     }
 
     private Text.Builder nextContent() {
         MUBuilder builder = new MUBuilder(spec, arguments);
-        boolean quoted = false;
-        boolean escaped = false;
-
         while (hasNext()) {
-            if (!escaped) {
+            if (!builder.isEscaped()) {
                 char peek = peek();
                 if (peek == '`') {
-                    quoted = !quoted;
                     next();
-                    builder.setQuoted(quoted);
+                    builder.setQuoted(!builder.isQuoted());
                     continue;
                 }
 
-                if (!quoted) {
+                if (!builder.isQuoted()) {
                     if (peek == ')') {
                         next();
                         return builder.toBuilder();
@@ -190,16 +186,14 @@ class MUParser {
                         builder.append(parseStatement());
                         continue;
                     }
-                    if (escaped = peek == '\\') {
+                    if (peek == '\\') {
                         builder.setEscaped(true);
                         next();
                         continue;
                     }
                 }
             }
-
             builder.append(next());
-            escaped = false;
         }
 
         return builder.plain();
