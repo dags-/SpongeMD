@@ -13,7 +13,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -106,16 +105,15 @@ abstract class MUParam {
             return new ResetParam();
         }
 
-        if (in.startsWith("//")) {
-            return new RunCommand(in.substring(1));
-        }
-
         if (in.startsWith("/")) {
-            return new SuggestCommand(in);
+            return new RunCommand(in);
         }
 
-        Matcher matcher = URL_PATTERN.matcher(id);
-        if (matcher.find()) {
+        if (in.startsWith("./")) {
+            return new SuggestCommand(in.substring(1));
+        }
+        
+        if (URL_PATTERN.matcher(id).find()) {
             try {
                 return new OpenUrl(new URL(in.matches("^https?://.*$") ? in : "http://" + in));
             } catch (MalformedURLException e) {
