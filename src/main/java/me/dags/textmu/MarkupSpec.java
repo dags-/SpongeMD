@@ -59,7 +59,7 @@ public final class MarkupSpec implements TextSerializer {
     /**
      * Render a SpongeMD string to a formatted Text
      *
-     * @param input The input String written in the Markup-like notation
+     * @param input The input String written in the TextMarkup notation
      * @return A formatted Text object including Colors, Styles, Actions enabled in the Spec
      */
     public Text render(String input) {
@@ -67,30 +67,31 @@ public final class MarkupSpec implements TextSerializer {
     }
 
     /**
-     * Write a given Text object to the Markup-like notation
+     * Write a given Text object to the TextMarkup notation
      *
      * @param text The formatted Text object
-     * @return A String representation of the given Text object written in the Markup-like notation
+     * @return A String representation of the given Text object written in the TextMarkup notation
      */
     public String write(TextRepresentable text) {
         return new MUWriter(this, true).write(text.toText());
     }
 
     /**
-     * Write a given Text object to the Markup-like notation without escaping Markup-like notation
+     * Write a given Text object to the TextMarkup notation without escaping TextMarkup notation used within the
+     * body of the text
      *
      * @param text The formatted Text object
-     * @return A String representation of the given Text object written in the Markup-like notation
+     * @return A String representation of the given Text object written in the TextMarkup notation
      */
     public String writeUnescaped(TextRepresentable text) {
         return new MUWriter(this, false).write(text.toText());
     }
 
     /**
-     * Write a given Text object to the Markup-like notation
+     * Write a given Text object to the TextMarkup notation
      *
      * @param text The formatted Text object
-     * @return A String representation of the given Text object written in the Markup-like notation
+     * @return A String representation of the given Text object written in the TextMarkup notation
      */
     @Override
     public String serialize(Text text) {
@@ -100,7 +101,7 @@ public final class MarkupSpec implements TextSerializer {
     /**
      * Render a given String into a formatted Text object
      *
-     * @param input The input String written in the Markup-like notation
+     * @param input The input String written in the TextMarkup notation
      * @return A formatted Text object including Colors, Styles, Actions enabled in the Spec
      */
     @Override
