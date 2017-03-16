@@ -1,0 +1,11 @@
+[
+    {
+        "modid": "textmu",
+        "name": "TextMU",
+        "version": "@version@",
+        "description": "A markup notation for Sponge Texts",
+        "requiredMods": [
+            "spongeapi@5.1.0-SNAPSHOT"
+        ]
+    }
+]

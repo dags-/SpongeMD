@@ -112,7 +112,7 @@ abstract class MUParam {
         if (in.startsWith("./")) {
             return new SuggestCommand(in.substring(1));
         }
-        
+
         if (URL_PATTERN.matcher(id).find()) {
             try {
                 return new OpenUrl(new URL(in.matches("^https?://.*$") ? in : "http://" + in));
