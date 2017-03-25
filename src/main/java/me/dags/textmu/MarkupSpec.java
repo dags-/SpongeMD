@@ -57,7 +57,7 @@ public final class MarkupSpec implements TextSerializer {
     }
 
     /**
-     * Render a SpongeMD string to a formatted Text
+     * Render a TextMU string to a formatted Text
      *
      * @param input The input String written in the TextMarkup notation
      * @return A formatted Text object including Colors, Styles, Actions enabled in the Spec
