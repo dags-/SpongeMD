@@ -1,8 +1,10 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
+apply plugin: 'java'
+
 group 'me.dags'
-version '0.1'
-def spongeAPI = '5.1.0'
+version '1.0'
+def spongeAPI = '7.1.0'
 def spongeChannel = 'SNAPSHOT'
 
 repositories {
@@ -13,8 +15,8 @@ repositories {
 }
 
 dependencies {
-    apply plugin: 'java'
-    compileOnly "org.spongepowered:spongeapi:${spongeAPI}-$spongeChannel"
+    compile "org.spongepowered:spongeapi:${spongeAPI}-$spongeChannel"
+    runtime "org.spongepowered:spongeapi:${spongeAPI}-$spongeChannel"
 }
 
 processResources {

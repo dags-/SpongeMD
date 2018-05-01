@@ -3,9 +3,9 @@
         "modid": "textmu",
         "name": "TextMU",
         "version": "@version@",
-        "description": "A markup language for SpongeAPI",
+        "description": "A markup syntax for SpongeAPI",
         "requiredMods": [
-            "spongeapi@5.1.0-SNAPSHOT"
+            "spongeapi@5.2.0-SNAPSHOT"
         ]
     }
 ]

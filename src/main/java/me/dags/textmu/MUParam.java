@@ -24,7 +24,7 @@ abstract class MUParam {
 
     abstract void apply(Text.Builder builder);
 
-    private static final String URL = "((ht|f)tp(s?):\\/\\/|www\\.)(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)";
+    private static final String URL = "^((ht|f)tp(s?)://|www\\.)?([\\da-z-]+)(\\.([\\da-z-]+))*((\\.[a-z]{2,6})+|:[0-9]+)(/[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)*?$";
     private static final Pattern URL_PATTERN = Pattern.compile(URL, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
     static final MUParam EMPTY = new MUParam() {
         @Override
@@ -42,27 +42,31 @@ abstract class MUParam {
     static Map<String, TextColor> colors() {
         if (MUParam.colors.isEmpty()) {
             Map<String, TextColor> colors = new HashMap<>();
-            Sponge.getRegistry().getAllOf(TextColor.class).stream()
-                    .filter(color -> color != TextColors.RESET && color != TextColors.NONE)
+            try {
+                Sponge.getRegistry().getAllOf(TextColor.class).stream()
+                        .filter(color -> color != TextColors.RESET && color != TextColors.NONE)
                     .forEach(color -> colors.put(color.getId().toLowerCase(), color));
-
-            colors.put("a", TextColors.GREEN);
-            colors.put("b", TextColors.AQUA);
-            colors.put("c", TextColors.AQUA);
-            colors.put("d", TextColors.RED);
-            colors.put("e", TextColors.LIGHT_PURPLE);
-            colors.put("f", TextColors.YELLOW);
-            colors.put("0", TextColors.BLACK);
-            colors.put("1", TextColors.DARK_BLUE);
-            colors.put("2", TextColors.DARK_GREEN);
-            colors.put("3", TextColors.DARK_AQUA);
-            colors.put("4", TextColors.DARK_RED);
-            colors.put("5", TextColors.DARK_PURPLE);
-            colors.put("6", TextColors.GOLD);
-            colors.put("7", TextColors.GRAY);
-            colors.put("8", TextColors.DARK_GRAY);
-            colors.put("9", TextColors.BLUE);
-            MUParam.colors = colors;
+            } catch (IllegalStateException e) {
+                //e.printStackTrace();
+            } finally {
+                colors.put("a", TextColors.GREEN);
+                colors.put("b", TextColors.AQUA);
+                colors.put("c", TextColors.AQUA);
+                colors.put("d", TextColors.RED);
+                colors.put("e", TextColors.LIGHT_PURPLE);
+                colors.put("f", TextColors.YELLOW);
+                colors.put("0", TextColors.BLACK);
+                colors.put("1", TextColors.DARK_BLUE);
+                colors.put("2", TextColors.DARK_GREEN);
+                colors.put("3", TextColors.DARK_AQUA);
+                colors.put("4", TextColors.DARK_RED);
+                colors.put("5", TextColors.DARK_PURPLE);
+                colors.put("6", TextColors.GOLD);
+                colors.put("7", TextColors.GRAY);
+                colors.put("8", TextColors.DARK_GRAY);
+                colors.put("9", TextColors.BLUE);
+                MUParam.colors = colors;
+            }
         }
         return MUParam.colors;
     }
@@ -70,16 +74,20 @@ abstract class MUParam {
     static Map<String, TextStyle.Base> styles() {
         if (MUParam.styles.isEmpty()) {
             Map<String, TextStyle.Base> styles = new HashMap<>();
-            Sponge.getRegistry().getAllOf(TextStyle.Base.class).stream()
-                    .filter(style -> style != TextStyles.NONE && style != TextStyles.RESET)
-                    .forEach(style -> styles.put(style.getId().toLowerCase(), style));
-
-            styles.put("k", TextStyles.OBFUSCATED);
-            styles.put("l", TextStyles.BOLD);
-            styles.put("m", TextStyles.STRIKETHROUGH);
-            styles.put("n", TextStyles.UNDERLINE);
-            styles.put("o", TextStyles.ITALIC);
-            MUParam.styles = styles;
+            try {
+                Sponge.getRegistry().getAllOf(TextStyle.Base.class).stream()
+                        .filter(style -> style != TextStyles.NONE && style != TextStyles.RESET)
+                        .forEach(style -> styles.put(style.getId().toLowerCase(), style));
+            } catch (IllegalStateException e) {
+                //e.printStackTrace();
+            } finally {
+                styles.put("k", TextStyles.OBFUSCATED);
+                styles.put("l", TextStyles.BOLD);
+                styles.put("m", TextStyles.STRIKETHROUGH);
+                styles.put("n", TextStyles.UNDERLINE);
+                styles.put("o", TextStyles.ITALIC);
+                MUParam.styles = styles;
+            }
         }
         return MUParam.styles;
     }

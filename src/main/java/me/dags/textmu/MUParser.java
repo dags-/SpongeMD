@@ -1,201 +1,300 @@
 package me.dags.textmu;
 
+import com.sun.istack.internal.Nullable;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.serializer.TextParseException;
 
-import java.util.ArrayList;
+import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author dags <dags@dags.me>
  */
-class MUParser {
+final class MUParser {
 
-    static final Map<?, ?> EMPTY = Collections.EMPTY_MAP;
-
-    private final String input;
     private final MarkupSpec spec;
-    private final Map<?, ?> arguments;
+    private final Buffer buffer;
+    private final String in;
+
+    private boolean blockEscaped = false;
+    private boolean charEscaped = false;
+    private char next = (char) -1;
     private int pos = -1;
 
-    MUParser(MarkupSpec spec, String input) {
+    MUParser(MarkupSpec spec, String in) {
+        this.buffer = new Buffer(in.length());
         this.spec = spec;
-        this.input = input;
-        this.arguments = EMPTY;
-    }
-
-    MUParser(MarkupSpec spec, String input, Map<?, ?> arguments) {
-        this.spec = spec;
-        this.input = input;
-        this.arguments = arguments.isEmpty() ? EMPTY : arguments;
-    }
-
-    private boolean hasNext() {
-        return pos + 1 < input.length();
-    }
-
-    private char next() {
-        if (hasNext()) {
-            return input.charAt(++pos);
-        }
-        throw new TextParseException("Unexpected end of String: " + input);
-    }
-
-    private char peek() {
-        return hasNext() ? input.charAt(pos + 1) : input.charAt(pos);
-    }
-
-    private boolean skip(int count) {
-        if (pos + count < input.length()) {
-            pos += count;
-            return true;
-        }
-        pos = input.length() - 1;
-        return false;
+        this.in = in;
     }
 
     Text parse() {
-        MUBuilder builder = new MUBuilder(spec, arguments);
-        boolean quoted = false;
-        boolean escaped = false;
+        return nextText(true).build();
+    }
 
-        while (hasNext()) {
-            char c = next();
-            if (!escaped) {
-                if (c == '`') {
-                    builder.setQuoted(true);
-                    quoted = !quoted;
+    /**
+     * Increment the character position until it is not on whitespace
+     */
+    private void skipSpace() {
+        while (next == ' ' && next()) {
+
+        }
+    }
+
+    /**
+     * Checks and increments the character position in the input string
+     * Reads escaped blocks '`...`' and escaped chars '\\.' in one go (appending the block/char to the buffer)
+     */
+    private boolean next() {
+        if (pos + 1 < in.length()) {
+            next = in.charAt(++pos);
+            if (blockEscaped) {
+                blockEscaped = next != '`';
+                if (blockEscaped) {
+                    buffer.append(next);
+                }
+                return next();
+            }
+            if (charEscaped) {
+                charEscaped = false;
+                buffer.append(next);
+                return next();
+            }
+            if (next == '`') {
+                blockEscaped = true;
+                return next();
+            }
+            if (next == '\\') {
+                charEscaped = true;
+                return next();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Reads in the next text section, splitting off an parsing any markup syntax before appending it
+     * If is called as the root the input string will be read to the end, otherwise the method terminates
+     * at the end of a markup statement on the close brace ')'
+     */
+    @Nonnull
+    private Text.Builder nextText(boolean root) {
+        buffer.reset();
+        Text.Builder builder = null;
+
+        while (next()) {
+            // '[' indicates start of markup syntax
+            if (next == '[') {
+                // append any plain-text currently in the buffer
+                builder = appendPlainText(builder);
+                int start = pos;
+
+                // parse markup syntax `[..](...)`, returns null if the syntax is invalid/incomplete
+                Text.Builder next = nextStatement();
+                if (next != null) {
+                    // valid syntax so append
+                    builder = append(builder, next);
                     continue;
                 }
 
-                if (!quoted) {
-                    if (c == '[') {
-                        Text text = parseStatement();
-                        // avoid unnecessary nesting of texts
-                        if (!hasNext() && builder.isEmpty()) {
-                            return text;
-                        }
-                        builder.append(text);
-                        continue;
-                    }
-                    if (escaped = c == '\\') {
-                        builder.setEscaped(true);
-                        continue;
-                    }
-                }
+                // invalid syntax, reset position to read as plain text starting with the '[' char
+                pos = start;
+                buffer.reset();
+                buffer.append('[');
+                continue;
             }
-            builder.append(c);
-            escaped = false;
+
+            // indicates end of a syntax
+            if (!root && next == ')') {
+                break;
+            }
+
+            // append char as plain-text
+            buffer.append(next);
         }
-        return builder.build();
+
+        // append any trailing plain-text
+        builder = appendPlainText(builder);
+
+        // builder may still be null at this point
+        return builder == null ? Text.builder() : builder;
     }
 
-    private Text parseStatement() {
-        int start = pos;
-        int end = input.length();
-        List<MUParam> params = parseParams();
-        if (hasNext()) {
-            if (next() == '(') {
-                Text.Builder content = nextContent();
-                for (MUParam param : params) {
-                    if (param.test(spec)) {
-                        param.apply(content);
-                    }
-                }
-                return content.build();
-            }
-            end = pos;
+    /**
+     * Parses the markup statement `[..](...)`
+     * Starts at pos 1 in the syntax. ie the char immediately after the open bracket '['
+     * Ends on the close brace ')'
+     * returns null if syntax is incorrect/incomplete
+     */
+    @Nullable
+    private Text.Builder nextStatement() {
+        // parse params `[..]`
+        List<MUParam> params = nextParams();
+        if (!next()) {
+            // unexpected end of string
+            return null;
         }
-        return Text.of(input.substring(start, end));
+
+        if (next != '(') {
+            // invalid syntax
+            return null;
+        }
+
+        // parse content `(...)`
+        Text.Builder builder = nextText(false);
+        if (next != ')') {
+            // invalid syntax
+            return null;
+        }
+
+        // apply params to valid content
+        for (MUParam param : params) {
+            if (spec == null || param.test(spec)) {
+                param.apply(builder);
+            }
+        }
+
+        return builder;
     }
 
-    private List<MUParam> parseParams() {
-        List<MUParam> params = new ArrayList<>();
-        while (hasNext()) {
+    /**
+     * Parses the list of parameters between the brackets `[..]` in the statement
+     */
+    private List<MUParam> nextParams() {
+        List<MUParam> params = Collections.emptyList();
+
+        while (next()) {
+            // end of params
+            if (next == ']') {
+                break;
+            }
+
+            buffer.append(next);
             MUParam param = nextParam();
-            params.add(param);
-            if (peek() == ']') {
-                next();
+            if (param != MUParam.EMPTY) {
+                if (params.isEmpty()) {
+                    // lazy initialize the params list
+                    params = new LinkedList<>();
+                }
+                params.add(param);
+            }
+
+            // end of params
+            if (next == ']') {
                 break;
             }
         }
+
         return params;
     }
 
+    /**
+     * Parse a single parameter
+     */
     private MUParam nextParam() {
-        MUBuilder builder = new MUBuilder(spec, arguments);
+        // ignore leading whitespace
+        skipSpace();
 
-        while (hasNext()) {
-            char peek = peek();
-            if (!builder.isEscaped()) {
-                if (peek == '`') {
-                    next();
-                    builder.setQuoted(!builder.isQuoted());
-                    continue;
-                }
-
-                if (!builder.isQuoted()) {
-                    if (peek == ']') {
-                        break;
-                    }
-                    if (peek == ',') {
-                        next();
-                        break;
-                    }
-                    if (peek == '[' && skip(1)) {
-                        return MUParam.of(parseStatement());
-                    }
-                    if (peek == '\\') {
-                        builder.setEscaped(true);
-                        next();
-                        continue;
-                    }
-                }
+        // special case where param is hover text
+        if (next == '[') {
+            Text.Builder hover = nextStatement();
+            if (hover == null) {
+                return MUParam.EMPTY;
             }
-            builder.append(next());
+            return MUParam.of(hover.build());
         }
 
-        if (builder.isRaw()) {
-            return MUParam.of(builder.string());
+        // read param chars into the buffer
+        while (next()) {
+            if (next == ',' || next == ']') {
+                break;
+            }
+            buffer.append(next);
         }
 
-        // parameter is complex (may be from a template) so serialize and parse as a param
-        return new MUParser(spec, builder.serialized(), arguments).nextParam();
+        // parse param from the buffer
+        return MUParam.of(buffer.drain());
     }
 
-    private Text.Builder nextContent() {
-        MUBuilder builder = new MUBuilder(spec, arguments);
-        while (hasNext()) {
-            if (!builder.isEscaped()) {
-                char peek = peek();
-                if (peek == '`') {
-                    next();
-                    builder.setQuoted(!builder.isQuoted());
-                    continue;
-                }
-
-                if (!builder.isQuoted()) {
-                    if (peek == ')') {
-                        next();
-                        return builder.toBuilder();
-                    }
-                    if (peek == '[') {
-                        next();
-                        builder.append(parseStatement());
-                        continue;
-                    }
-                    if (peek == '\\') {
-                        builder.setEscaped(true);
-                        next();
-                        continue;
-                    }
-                }
+    /**
+     * Adds any plain-text stored in the buffer to the current Text.Builder
+     */
+    private Text.Builder appendPlainText(Text.Builder builder) {
+        if (buffer.length() > 0) {
+            String plain = buffer.drain();
+            if (builder == null) {
+                builder = Text.builder(plain);
+            } else {
+                builder.append(Text.of(plain));
             }
-            builder.append(next());
+        }
+        return builder;
+    }
+
+    /**
+     * Adds the 'other' Builder to the main one, lazily creating the main Builder if null
+     */
+    private Text.Builder append(@Nullable Text.Builder builder, @Nonnull Text.Builder other) {
+        if (builder == null) {
+            // lazy create builder
+            builder = Text.builder();
+        }
+        return builder.append(other.build());
+    }
+
+    private static class Buffer {
+
+        private char[] buffer;
+        private int carrot = 0;
+
+        private Buffer(int size) {
+            buffer = new char[size + 2];
         }
 
-        return builder.plain();
+        /**
+         * The length of the current buffered content
+         */
+        private int length() {
+            return carrot;
+        }
+
+        /**
+         * Resets the carrot position
+         * Contents are overwritten as subsequent appends are called rather than creating new char array
+         */
+        private void reset() {
+            carrot = 0;
+        }
+
+        /**
+         * Append a char to buffer
+         */
+        private Buffer append(char c) {
+            ensureCapacity(carrot + 1);
+            buffer[carrot++] = c;
+            return this;
+        }
+
+        /**
+         * Retrieve the string stored in the buffer and reset the carrot to the start
+         */
+        private String drain() {
+            int end = carrot;
+            carrot = 0;
+            return new String(buffer, 0, end);
+        }
+
+        // expand the buffer array as necessary
+
+        /**
+         * Expand the buffer array as necessary
+         */
+        private void ensureCapacity(int size) {
+            if (size > buffer.length) {
+                buffer = Arrays.copyOf(buffer, size * 2 + 2);
+            }
+        }
     }
 }

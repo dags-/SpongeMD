@@ -53,7 +53,7 @@ public final class MarkupSpec implements TextSerializer {
     }
 
     public MarkupTemplate template(String input) {
-        return new MarkupTemplate(this, input);
+        return new MUTParser(this, input).parse();
     }
 
     /**
@@ -196,6 +196,16 @@ public final class MarkupSpec implements TextSerializer {
 
     public static MarkupSpec.Builder builder() {
         return new Builder();
+    }
+
+    @Override
+    public String getId() {
+        return "textmu";
+    }
+
+    @Override
+    public String getName() {
+        return "TextMU";
     }
 
     public static class Builder {
