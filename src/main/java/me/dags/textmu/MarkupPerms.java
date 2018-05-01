@@ -2,6 +2,8 @@ package me.dags.textmu;
 
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
+import java.util.HashMap;
+import java.util.Map;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
@@ -13,9 +15,6 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.TextTemplate;
 import org.spongepowered.api.text.format.TextColor;
 import org.spongepowered.api.text.format.TextStyle;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author dags <dags@dags.me>
@@ -137,7 +136,8 @@ public class MarkupPerms {
 
     private void registerPermission(PermissionService service, Object plugin, String node, Text description) {
         if (!service.getDescription(node).isPresent()) {
-            service.newDescriptionBuilder(plugin).ifPresent(builder -> builder.id(node).description(description).register());
+            service.newDescriptionBuilder(plugin)
+                    .id(node).description(description).register();
         }
     }
 

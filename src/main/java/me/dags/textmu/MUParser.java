@@ -1,6 +1,5 @@
 package me.dags.textmu;
 
-import com.sun.istack.internal.Nullable;
 import org.spongepowered.api.text.Text;
 
 import javax.annotation.Nonnull;
@@ -128,7 +127,6 @@ final class MUParser {
      * Ends on the close brace ')'
      * returns null if syntax is incorrect/incomplete
      */
-    @Nullable
     private Text.Builder nextStatement() {
         // parse params `[..]`
         List<MUParam> params = nextParams();
@@ -236,7 +234,7 @@ final class MUParser {
     /**
      * Adds the 'other' Builder to the main one, lazily creating the main Builder if null
      */
-    private Text.Builder append(@Nullable Text.Builder builder, @Nonnull Text.Builder other) {
+    private Text.Builder append(Text.Builder builder, @Nonnull Text.Builder other) {
         if (builder == null) {
             // lazy create builder
             builder = Text.builder();
