@@ -250,7 +250,7 @@ public final class MarkupTemplate {
          * @return The current Applied
          */
         public Applier withCause(Cause cause) {
-            return with(cause.getNamedCauses());
+            return with(cause.getContext().asMap());
         }
 
         /**

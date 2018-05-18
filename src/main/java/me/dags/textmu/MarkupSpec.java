@@ -87,6 +87,16 @@ public final class MarkupSpec implements TextSerializer {
         return new MUWriter(this, false).write(text.toText());
     }
 
+    @Override
+    public String getName() {
+        return "MUText";
+    }
+
+    @Override
+    public String getId() {
+        return "mutext";
+    }
+
     /**
      * Write a given Text object to the TextMarkup notation
      *

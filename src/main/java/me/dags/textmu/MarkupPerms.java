@@ -137,7 +137,7 @@ public class MarkupPerms {
 
     private void registerPermission(PermissionService service, Object plugin, String node, Text description) {
         if (!service.getDescription(node).isPresent()) {
-            service.newDescriptionBuilder(plugin).ifPresent(builder -> builder.id(node).description(description).register());
+            service.newDescriptionBuilder(plugin).id(node).description(description).register();
         }
     }
 
