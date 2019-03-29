@@ -2,7 +2,7 @@
 A small, Markdown inspired syntax for SpongeAPI  
 _This is a library, not a standalone plugin!_
 
-[![](https://jitpack.io/v/dags-/TextMU.svg)](https://jitpack.io/dags-/TextMU)
+[![](https://jitpack.io/v/dags-/TextMU.svg)](https://jitpack.io/#dags-/TextMU)
 
 ## Syntax
 The syntax is similar to Markdown links:
