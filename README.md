@@ -25,31 +25,10 @@ Text actions are supported:
 `[Mouse over me](this is a [hidden](italic) message!)`
 
 ## Templates
-Templates take the following form:
-```
-"Hello {name}" + {name: "world"} => "Hello World"
-```
-The text between the braces ("{}") is used as a key/getter for a value held in the root object.  
-To refer to the root object itself, you can use the `{.}` notation.
-
-
-Nested values are supported:
-```
-"Hello {planet|{name}}" + {planet: {name: "World"}} => "Hello World"
-```
-The left-hand side of the pipe ("|") defines the key/getter of the desired value.  
-The right-hand side of the pipe defines a new template to be applied to said value.  
-
-Iterable values are supported:
-```
-"Planets: {planets|{name}|, }" + {planets: [{name: "Earth"}, {name: "Mars"}, {name: "Pluto"}]} => "Planets: Earth, Mars, Pluto"
-```
-The left-hand side of the first pipe ("|") defines the key/getter of the desired iterable value.  
-The right-hand side of the first pipe defines a new template to be applied to each of the elements.  
-The right-hand side of the _second_ pipe is repeated between each element.
+TextMU incorporates a simple string templating engine which it can render to text.  
+You can read more about the template syntax and usage [here](https://github.com/dags-/Template/blob/master/README.md)
 
 ## Usage/Code Examples
-
 #### Dependency:
 ```
 repositories {
