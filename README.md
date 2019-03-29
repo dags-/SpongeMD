@@ -48,5 +48,31 @@ The left-hand side of the first pipe ("|") defines the key/getter of the desired
 The right-hand side of the first pipe defines a new template to be applied to each of the elements.  
 The right-hand side of the _second_ pipe is repeated between each element.
 
-## Example Code
+## Usage/Code Examples
+
+#### Dependency:
+```
+repositories {
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile "com.github.dags-:TextMU:0.3.0"
+}
+```
+
+#### Basic text rendering:
+```
+Text text = MUSpec.global().render("Hello [World](blue)");
+Sponge.getServer().getBroadcastChannel().send(text);
+```
+
+#### Permission-based text rendering:
+```
+Text text = MUSpec.global().render(player, "Hello [World!](green)");
+Sponge.getServer().getBroadcastChannel().send(text);
+```
+_Here, the output text will only include colors/styles/actions that the player has permission to use_
+
+#### Further examples
 See the [example plugin](https://github.com/dags-/TextMU/blob/master/src/test/java/ExamplePlugin.java)
