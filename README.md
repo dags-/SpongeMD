@@ -1,6 +1,5 @@
 # TextMU
-A small, Markdown inspired syntax for SpongeAPI  
-_This is a library, not a standalone plugin!_
+A simple markup syntax for Sponge
 
 [![](https://jitpack.io/v/dags-/TextMU.svg)](https://jitpack.io/#dags-/TextMU)
 
