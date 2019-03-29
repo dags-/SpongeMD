@@ -1,24 +1,42 @@
-import org.apache.tools.ant.filters.ReplaceTokens
+plugins {
+    id "com.github.johnrengelman.shadow" version "4.0.2"
+    id 'org.spongepowered.plugin' version '0.8.1'
+    id "java"
+}
 
-apply plugin: 'java'
+group "me.dags"
+version "0.3-SNAPSHOT"
+def spongeAPI = "7.1.0"
+def spongeChannel = "SNAPSHOT"
+sourceCompatibility = 1.8
 
-group 'me.dags'
-version '0.2'
-def spongeAPI = '7.1.0'
-def spongeChannel = 'SNAPSHOT'
+sponge {
+    plugin.id = rootProject.name.toLowerCase()
+    plugin.meta {
+        name = rootProject.name
+        version = rootProject.version
+        description = "A text markup syntax for Sponge"
+    }
+}
+
+configurations {
+    shade
+    compile.extendsFrom shade
+}
 
 repositories {
-    mavenCentral()
-    maven {
-        url 'http://repo.spongepowered.org/maven'
-    }
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
     compile "org.spongepowered:spongeapi:${spongeAPI}-$spongeChannel"
-    runtime "org.spongepowered:spongeapi:${spongeAPI}-$spongeChannel"
+    shade "com.github.dags-:Template:0.1"
 }
 
-processResources {
-    filter ReplaceTokens, tokens: ["version": project.version]
+shadowJar {
+    configurations = [project.configurations.shade]
+    relocate "me.dags.template.", "me.dags.text.template."
+    classifier null
 }
+
+build.dependsOn shadowJar
