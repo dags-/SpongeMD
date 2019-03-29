@@ -1,6 +1,5 @@
 package me.dags.text;
 
-import com.google.common.collect.ImmutableMap;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -9,6 +8,7 @@ import org.spongepowered.api.text.format.TextStyle;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 interface Property {
 
     Property NONE = b -> {};
-    Map<String, TextColor> COLORS = ImmutableMap.copyOf(textColors());
-    Map<String, TextStyle> STYLES = ImmutableMap.copyOf(textStyles());
+    Map<String, TextColor> COLORS = Collections.unmodifiableMap(textColors());
+    Map<String, TextStyle> STYLES = Collections.unmodifiableMap(textStyles());
 
     void apply(Text.Builder builder);
     
@@ -117,12 +117,22 @@ interface Property {
     }
     
     static Map<String, TextColor> textColors() {
-        return Sponge.getRegistry().getAllOf(TextColor.class).stream()
-                .collect(Collectors.toMap(c -> c.getName().toLowerCase(), c -> c));
+        try {
+            return Sponge.getRegistry().getAllOf(TextColor.class).stream()
+                    .collect(Collectors.toMap(c -> c.getName().toLowerCase(), c -> c));
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return Collections.emptyMap();
+        }
     }
 
     static Map<String, TextStyle> textStyles() {
-        return Sponge.getRegistry().getAllOf(TextStyle.Base.class).stream()
-                .collect(Collectors.toMap(c -> c.getName().toLowerCase(), s -> s));
+        try {
+            return Sponge.getRegistry().getAllOf(TextStyle.Base.class).stream()
+                    .collect(Collectors.toMap(c -> c.getName().toLowerCase(), s -> s));
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return Collections.emptyMap();
+        }
     }
 }

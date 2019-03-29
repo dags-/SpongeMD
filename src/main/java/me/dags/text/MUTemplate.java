@@ -125,6 +125,7 @@ public class MUTemplate {
             try {
                 StringWriter writer = new StringWriter();
                 MUTemplate.this.template.apply(arguments, writer);
+                writer.flush();
                 return spec.render(predicate, writer.toString());
             } catch (Throwable t) {
                 t.printStackTrace();

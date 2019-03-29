@@ -8,14 +8,6 @@ import java.io.Reader;
 
 class Parser {
 
-    static Text parse(String string, Property.Predicate predicate) throws IOException {
-        return parse(new CharReader(string), new StringBuilder(string.length()), predicate);
-    }
-
-    static Text parse(Reader reader, Property.Predicate predicate) throws IOException {
-        return parse(new CharReader(reader), new StringBuilder(), predicate);
-    }
-
     private static Text parse(CharReader reader, StringBuilder raw, Property.Predicate predicate) throws IOException {
         Context context = new Context(new Builder(), raw);
         while (reader.next()) {
@@ -53,22 +45,23 @@ class Parser {
         if (!reader.next() || reader.character() != '(') {
             return Builder.EMPTY;
         }
+
         return parseProperties(reader, predicate, context);
     }
 
     private static Builder parseProperties(CharReader reader, Property.Predicate predicate, Context context) throws IOException {
-        StringBuilder fmt = new StringBuilder();
+        StringBuilder buffer = new StringBuilder();
         while (reader.next()) {
-            char end = readProperty(reader, context);
+            char end = readProperty(reader, context, buffer);
             if (end == ')') {
-                Property property = Property.parse(fmt.toString().trim(), predicate);
+                Property property = Property.parse(buffer.toString().trim(), predicate);
                 context.root.property(property);
-                return context.builder;
+                return context.root;
             }
             if (end == ',') {
-                Property property = Property.parse(fmt.toString().trim(), predicate);
+                Property property = Property.parse(buffer.toString().trim(), predicate);
                 context.root.property(property);
-                fmt.setLength(0);
+                buffer.setLength(0);
             }
         }
         return Builder.EMPTY;
@@ -111,7 +104,7 @@ class Parser {
         return CharReader.EOF;
     }
 
-    private static char readProperty(CharReader reader, Context context) throws IOException {
+    private static char readProperty(CharReader reader, Context context, StringBuilder buffer) throws IOException {
         boolean charEscaped = false;
         boolean stringEscaped = false;
         while (reader.next()) {
@@ -119,7 +112,7 @@ class Parser {
             context.raw.append(c);
 
             if (charEscaped) {
-                context.accept(c);
+                buffer.append(c);
                 charEscaped = false;
                 continue;
             }
@@ -127,7 +120,7 @@ class Parser {
                 if (c == '`') {
                     stringEscaped = false;
                 } else {
-                    context.accept(c);
+                    buffer.append(c);
                 }
                 continue;
             }
@@ -143,7 +136,7 @@ class Parser {
                 continue;
             }
 
-            context.accept(c);
+            buffer.append(c);
         }
         return CharReader.EOF;
     }
@@ -163,5 +156,13 @@ class Parser {
         private void accept(char c) {
             builder = builder.text(c);
         }
+    }
+
+    static Text parse(String string, Property.Predicate predicate) throws IOException {
+        return parse(new CharReader(string), new StringBuilder(string.length()), predicate);
+    }
+
+    static Text parse(Reader reader, Property.Predicate predicate) throws IOException {
+        return parse(new CharReader(reader), new StringBuilder(), predicate);
     }
 }
