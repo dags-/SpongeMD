@@ -8,14 +8,16 @@ import org.spongepowered.api.text.TextElement;
 import org.spongepowered.api.text.transform.SimpleTextFormatter;
 import org.spongepowered.api.text.transform.SimpleTextTemplateApplier;
 
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class MUTemplate {
+public class MUTemplate implements Template {
 
     public static final MUTemplate EMPTY = new MUTemplate(MUSpec.create(), Template.EMPTY, MUPerms.NONE);
 
@@ -27,6 +29,11 @@ public class MUTemplate {
         this.spec = spec;
         this.template = template;
         this.predicate = predicate;
+    }
+
+    @Override
+    public void apply(Object value, Writer writer) throws IOException {
+        template.apply(value, writer);
     }
 
     public Applier with(String key, Object value) {
