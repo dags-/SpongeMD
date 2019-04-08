@@ -37,7 +37,7 @@ repositories {
 }
 
 dependencies {
-    compile "com.github.dags-:TextMU:0.3.0"
+    compile "com.github.dags-:TextMU:0.3.3"
 }
 ```
 
