@@ -8,7 +8,7 @@ plugins {
 
 group "me.dags"
 version "0.3.4"
-def spongeAPI = "7.1.0-SNAPSHOT"
+def spongeAPI = "7.1.0"
 description = "A markup syntax for Sponge"
 
 configurations {
