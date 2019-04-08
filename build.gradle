@@ -47,4 +47,5 @@ install.repositories.mavenInstaller.pom.whenConfigured { pom ->
     pom.dependencies.removeAll { it.scope == "compile" }
 }
 
-build.dependsOn shadowJar
+jar.dependsOn shadowJar
+jar.enabled false
