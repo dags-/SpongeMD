@@ -1,5 +1,5 @@
 # TextMU
-A simple markup syntax for Sponge
+A markup syntax library for Sponge
 
 [![](https://jitpack.io/v/dags-/TextMU.svg)](https://jitpack.io/#dags-/TextMU)
 

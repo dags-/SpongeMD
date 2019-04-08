@@ -1,24 +1,15 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins {
     id "com.github.johnrengelman.shadow" version "4.0.2"
-    id "org.spongepowered.plugin" version "0.8.1"
     id "maven"
     id "java"
 }
 
 group "me.dags"
 version "0.3.2-SNAPSHOT"
-def spongeAPI = "7.1.0"
-def spongeChannel = "SNAPSHOT"
-sourceCompatibility = 1.8
-
-sponge {
-    plugin.id = rootProject.name.toLowerCase()
-    plugin.meta {
-        name = rootProject.name
-        version = rootProject.version
-        description = "A text markup syntax for Sponge"
-    }
-}
+def spongeAPI = "7.1.0-SNAPSHOT"
+description = "A markup syntax library for Sponge"
 
 configurations {
     shade
@@ -26,11 +17,13 @@ configurations {
 }
 
 repositories {
+    mavenCentral()
+    maven { url "https://repo.spongepowered.org/maven"}
     maven { url "https://jitpack.io" }
 }
 
 dependencies {
-    compile "org.spongepowered:spongeapi:${spongeAPI}-$spongeChannel"
+    compile "org.spongepowered:spongeapi:${spongeAPI}"
     shade "com.github.dags-:Template:0.1"
 }
 
@@ -40,9 +33,18 @@ shadowJar {
     classifier null
 }
 
+processResources {
+    filter ReplaceTokens, tokens: [
+            "id": project.name.toLowerCase(),
+            "name": project.name,
+            "version": project.version,
+            "description": project.description,
+            "spongeapi": "spongeapi@"+spongeAPI,
+    ]
+}
+
 install.repositories.mavenInstaller.pom.whenConfigured { pom ->
     pom.dependencies.removeAll { it.scope == "compile" }
 }
 
-jar.dependsOn shadowJar
-jar.enabled = false
+build.dependsOn shadowJar
