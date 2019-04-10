@@ -1,6 +1,6 @@
 # Permissions
 
-#### Built-in Permissions
+### Built-in Permissions
 
 | Permission | Description |
 | :- | :- |
@@ -12,7 +12,7 @@
 | `textmu.action.suggestion` | Enables the 'suggest command' text action |
 
 
-#### Custom Permissions
+### Custom Permissions
 
 Developers can define their own permission nodes to be used by the MUSpec instance:
 
