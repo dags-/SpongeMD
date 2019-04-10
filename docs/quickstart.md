@@ -1,15 +1,34 @@
 # Quickstart
 
-### Gradle Dependency
+### Dependency Management
 
+#### Gradle
 ```gradle
 repositories {
     maven { url "https://jitpack.io" }
 }
 
 dependencies {
-    compile "com.github.dags-:TextMU:0.3.4"
+    compile "com.github.dags-:TextMU:$VERSION"
 }
+```
+
+#### Maven
+```maven
+<repositories>
+  <repository>
+    <id>jitpack</id>
+    <url>https://jitpack.io</url>
+  </repository>
+</repositories>
+
+<dependencies>
+  <dependency>
+    <groupId>com.github.dags-</groupId>
+    <artifactId>TextMU</artifactId>
+    <version>$VERSION</version>
+  </dependency>
+</dependencies>
 ```
 
 ### Rendering
