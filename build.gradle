@@ -24,6 +24,7 @@ repositories {
 
 dependencies {
     compile "org.spongepowered:spongeapi:${spongeAPI}"
+    testCompile "junit:junit:4.12"
     shade "com.github.dags-:Template:0.1.1"
 }
 

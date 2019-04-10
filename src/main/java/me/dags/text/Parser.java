@@ -38,13 +38,15 @@ class Parser {
         while (reader.next()) {
             char end = readText(reader, context);
             if (end == '[') {
-                int start = context.raw.length();
+                int start = context.raw.length() - 1;
                 Builder child = parseMarkdown(reader, context.raw, predicate);
                 if (child.isEmpty()) {
                     context.builder.text(context.raw.substring(start));
                 } else {
                     context.builder.child(child);
                 }
+            } else if (end != CharReader.EOF) {
+                context.builder.text(end);
             }
         }
         return context.root.build().build();
@@ -55,10 +57,18 @@ class Parser {
         while (reader.next()) {
             char end = readText(reader, context);
             if (end == ']') {
-                break;
+                if (!reader.next()) {
+                    return Builder.EMPTY;
+                }
+                char next = reader.character();
+                raw.append(next);
+                if (next != '(') {
+                    return Builder.EMPTY;
+                }
+                return parseProperties(reader, predicate, context);
             }
             if (end == '[') {
-                int start = context.raw.length();
+                int start = context.raw.length() - 1;
                 Builder child = parseMarkdown(reader, raw, predicate);
                 if (child.isEmpty()) {
                     context.builder.text(context.raw.substring(start));
@@ -67,11 +77,7 @@ class Parser {
                 }
             }
         }
-        if (!reader.next() || reader.character() != '(') {
-            return Builder.EMPTY;
-        }
-
-        return parseProperties(reader, predicate, context);
+        return Builder.EMPTY;
     }
 
     private static Builder parseProperties(CharReader reader, Property.Predicate predicate, Context context) throws IOException {
