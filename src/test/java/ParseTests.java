@@ -75,11 +75,9 @@ public class ParseTests {
     public void test7() {
         test(
                 "Plain text [hover me](some hover text)",
-                Text.builder("Plain text ").append(
-                        Text.builder("hover me")
-                                .onHover(TextActions.showText(Text.of("some hover text")))
-                                .build()
-                ).build()
+                Text.builder("Plain text ").append(Text.builder("hover me")
+                        .onHover(TextActions.showText(Text.of("some hover text"))).build())
+                        .build()
         );
     }
 
@@ -88,9 +86,9 @@ public class ParseTests {
         test(
                 "Plain text [hover me](some hover text) and more plain text",
                 Text.builder("Plain text ").append(Text.builder("hover me")
-                        .onHover(TextActions.showText(Text.of("some hover text")))
+                        .onHover(TextActions.showText(Text.of("some hover text"))).build())
+                        .append(Text.of(" and more plain text"))
                         .build()
-                ).append(Text.of(" and more plain text")).build()
         );
     }
 
