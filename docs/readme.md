@@ -5,5 +5,6 @@ A markup syntax library for Sponge
 
 ### Documentation
 - [Syntax](docs/syntax.md)
-- [Permissions](docs/permissions.md)
 - [Quickstart](docs/quickstart.md)
+- [Permissions](docs/permissions.md)
+- [Templates](docs/templates.md)
