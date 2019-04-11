@@ -1,5 +1,7 @@
 # Syntax
 
+[Home](index.md)
+
 The TextMU syntax is similar to Markdown links:
 ```
 [the visible text](color,style,actions)
