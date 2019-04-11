@@ -5,7 +5,7 @@ A markup syntax library for Sponge
 [![](https://orepack.com/badge)](https://orepack.com/#dags/TextMU)
 
 ### Documentation
-- [Syntax](docs/syntax.md)
-- [Quickstart](docs/quickstart.md)
-- [Permissions](docs/permissions.md)
-- [Templates](docs/templates.md)
+- [Syntax](syntax.md)
+- [Quickstart](quickstart.md)
+- [Permissions](permissions.md)
+- [Templates](templates.md)
