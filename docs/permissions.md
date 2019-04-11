@@ -1,5 +1,7 @@
 # Permissions
 
+[Home](index.md)
+
 ### Built-in Permissions
 
 | Permission | Description |
