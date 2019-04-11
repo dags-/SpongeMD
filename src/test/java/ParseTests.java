@@ -23,6 +23,9 @@
  *
  */
 
+import impl.Init;
+import impl.TestColor;
+import impl.TestStyle;
 import me.dags.text.MUSpec;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,6 +33,10 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 
 public class ParseTests {
+
+    static {
+        Init.init();
+    }
 
     @Test
     public void test0() {
@@ -58,7 +65,9 @@ public class ParseTests {
 
     @Test
     public void test5() {
-        test("hello [world]()", Text.builder("hello ").append(Text.of("world")).build());
+        test("hello [world](red)", Text.builder("hello ")
+                .append(Text.builder("world").color(TestColor.RED).build())
+                .build());
     }
 
     @Test
@@ -95,11 +104,23 @@ public class ParseTests {
     @Test
     public void test9() {
         test(
-                "Outer1 [inner1 [inner2 [inner3]()]()]() outer2",
+                "Outer1 [inner1 [inner2 [inner3](red,bold)](blue,italic)](green,[hover text](gold,underline)) outer2",
                 Text.builder("Outer1 ")
                         .append(Text.builder("inner1 ")
+                                .color(TestColor.GREEN)
+                                .onHover(TextActions.showText(Text.builder("hover text")
+                                        .color(TestColor.GOLD)
+                                        .style(TestStyle.UNDERLINE)
+                                        .build()))
                                 .append(Text.builder("inner2 ")
-                                        .append(Text.of("inner3")).build()).build())
+                                        .color(TestColor.BLUE)
+                                        .style(TestStyle.ITALIC)
+                                        .append(Text.builder("inner3")
+                                                .color(TestColor.RED)
+                                                .style(TestStyle.BOLD)
+                                                .build())
+                                        .build())
+                                .build())
                         .append(Text.of(" outer2"))
                         .build()
         );

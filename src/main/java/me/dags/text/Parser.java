@@ -136,6 +136,7 @@ class Parser {
     }
 
     private static char readProperty(CharReader reader, Context context, StringBuilder buffer) throws IOException {
+        int depth = 0;
         boolean charEscaped = false;
         boolean stringEscaped = false;
         while (reader.next()) {
@@ -155,9 +156,6 @@ class Parser {
                 }
                 continue;
             }
-            if (c == ',' || c == ')') {
-                return c;
-            }
             if (c == '\\') {
                 charEscaped = true;
                 continue;
@@ -166,7 +164,24 @@ class Parser {
                 stringEscaped = true;
                 continue;
             }
-
+            if (c == ',') {
+                if (depth < 1) {
+                    return c;
+                }
+                buffer.append(c);
+                continue;
+            }
+            if (c == ')') {
+                if (depth < 1) {
+                    return c;
+                }
+                depth--;
+                buffer.append(c);
+                continue;
+            }
+            if (c == '(') {
+                depth++;
+            }
             buffer.append(c);
         }
         return CharReader.EOF;
