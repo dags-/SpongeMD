@@ -2,6 +2,8 @@
 
 [Home](index.md)
 
+# Syntax
+
 The TextMU syntax is similar to Markdown links:
 ```
 [the visible text](color,style,actions)
@@ -11,6 +13,10 @@ Nested syntax is valid:
 ```
 [Some yellow text and [some green text](green)](yellow)
 ```
+
+Syntax characters ` [ ] ( ) ` (which would not normally be visible in the rendered text) can be escaped via:
+- character escaping by prefixing a backslash: `\[` produces `[`
+- string escaping by enclosing in backticks: `` `[escaped string](bold)` `` produces `[escaped string](bold)`
 
 Text actions are supported:
 
