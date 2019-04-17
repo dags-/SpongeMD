@@ -34,6 +34,7 @@ import org.spongepowered.api.text.format.TextStyle;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -124,27 +125,54 @@ interface Property {
     }
 
     static <T> Optional<T> match(String in, Map<String, T> map) {
-        T t = map.get(in);
-        if (t != null) {
-            return Optional.of(t);
-        }
-        String match = "";
-        for (String key : map.keySet()) {
-            if (key.startsWith(in)) {
-                if (match.isEmpty()) {
-                    match = key;
-                } else {
-                    return Optional.empty();
-                }
-            }
-        }
-        return Optional.ofNullable(map.get(match));
+        return Optional.ofNullable(map.get(in));
+    }
+
+    static Map<String, String[]> altNames() {
+        Map<String, String[]> altNames = new HashMap<>();
+        // colors
+        altNames.put("aqua", new String[]{"aqua", "aq", "&b", "b"});
+        altNames.put("black", new String[]{"black", "&0", "0"});
+        altNames.put("blue", new String[]{"blue", "blu", "&9", "9"});
+        altNames.put("dark_aqua", new String[]{"dark_aqua", "*aqua", "aqua*", "*aq", "aq*", "&3", "3"});
+        altNames.put("dark_blue", new String[]{"dark_blue", "*blue", "blue*", "*blu", "blu*", "&1", "1"});
+        altNames.put("dark_gray", new String[]{"dark_gray", "*gray", "gray*", "*grey", "grey*", "*gry", "gry*", "&8", "8"});
+        altNames.put("dark_green", new String[]{"dark_green", "*green", "green*", "*grn", "grn*", "&2", "2"});
+        altNames.put("dark_purple", new String[]{"dark_purple", "*purple", "purple*", "*pur", "pur*", "&5", "5"});
+        altNames.put("dark_red", new String[]{"dark_red", "*red", "red*", "&4", "4"});
+        altNames.put("gray", new String[]{"gray", "grey", "gry", "&7", "7"});
+        altNames.put("green", new String[]{"green", "grn", "&a", "d"});
+        altNames.put("gold", new String[]{"gold", "dark_yellow", "*yellow", "yellow*", "*yel", "yel*", "&e", "e"});
+        altNames.put("light_purple", new String[]{"light_purple", "purple", "pur", "&d", "d"});
+        altNames.put("red", new String[]{"red", "&c", "c"});
+        altNames.put("white", new String[]{"white", "whi", "&f", "f"});
+        altNames.put("yellow", new String[]{"yellow", "yel", "&e", "e"});
+        // styles
+        altNames.put("bold", new String[]{"bold", "bld", "&l", "l", "*"});
+        altNames.put("italic", new String[]{"italic", "ita", "&o", "o", "_"});
+        altNames.put("obfuscated", new String[]{"obfuscated", "obfuscate", "obf", "&k", "k", "?"});
+        altNames.put("strikethrough", new String[]{"strikethrough", "strike", "&m", "m", "~"});
+        altNames.put("underline", new String[]{"underlined", "underline", "und", "&n", "n", "#"});
+        // reset
+        altNames.put("reset", new String[]{"reset", "rst", "&r", "r"});
+        return altNames;
     }
     
     static Map<String, TextColor> textColors() {
         try {
-            return Sponge.getRegistry().getAllOf(TextColor.class).stream()
-                    .collect(Collectors.toMap(c -> c.getName().toLowerCase(), c -> c));
+            Map<String, String[]> altNames = altNames();
+            Map<String, TextColor> map = new HashMap<>();
+            Sponge.getRegistry().getAllOf(TextColor.class).forEach(color -> {
+                String[] names = altNames.get(color.getName().toLowerCase());
+                if (names != null) {
+                    for (String name : names) {
+                        map.put(name, color);
+                    }
+                } else {
+                    map.put(color.getName().toLowerCase(), color);
+                }
+            });
+            return map;
         } catch (Throwable t) {
             t.printStackTrace();
             return Collections.emptyMap();
@@ -153,8 +181,19 @@ interface Property {
 
     static Map<String, TextStyle> textStyles() {
         try {
-            return Sponge.getRegistry().getAllOf(TextStyle.Base.class).stream()
-                    .collect(Collectors.toMap(c -> c.getName().toLowerCase(), s -> s));
+            Map<String, String[]> altNames = altNames();
+            Map<String, TextStyle> map = new HashMap<>();
+            Sponge.getRegistry().getAllOf(TextStyle.Base.class).forEach(style -> {
+                String[] names = altNames.get(style.getName().toLowerCase());
+                if (names != null) {
+                    for (String name : names) {
+                        map.put(name, style);
+                    }
+                } else {
+                    map.put(style.getName().toLowerCase(), style);
+                }
+            });
+            return map;
         } catch (Throwable t) {
             t.printStackTrace();
             return Collections.emptyMap();

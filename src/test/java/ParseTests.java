@@ -65,7 +65,7 @@ public class ParseTests {
 
     @Test
     public void test5() {
-        test("hello [world](red)", Text.builder("hello ")
+        test("hello [world](&c)", Text.builder("hello ")
                 .append(Text.builder("world").color(TestColor.RED).build())
                 .build());
     }
@@ -103,8 +103,9 @@ public class ParseTests {
 
     @Test
     public void test9() {
+        // * = bold, blu = blue, yel* = gold, # = underline
         test(
-                "Outer1 [inner1 [inner2 [inner3](red,bold)](blue,italic)](green,[hover text](gold,underline)) outer2",
+                "Outer1 [inner1 [inner2 [inner3](red,*)](blu,italic)](green,[hover text](yel*,#)) outer2",
                 Text.builder("Outer1 ")
                         .append(Text.builder("inner1 ")
                                 .color(TestColor.GREEN)
