@@ -5,4 +5,7 @@ A markup syntax library for Sponge
 [![](https://orepack.com/badge)](https://orepack.com/#dags/TextMU)
 
 ### Documentation
-https://dags-.github.io/TextMU/
+- [Syntax](syntax.md)
+- [Quickstart](quickstart.md)
+- [Permissions](permissions.md)
+- [Templates](templates.md)
