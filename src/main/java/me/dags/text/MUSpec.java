@@ -29,21 +29,51 @@ import me.dags.template.CharReader;
 import me.dags.template.Template;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextParseException;
+import org.spongepowered.api.text.serializer.TextSerializer;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
 
-public class MUSpec {
+public class MUSpec implements TextSerializer {
 
-    private static final MUSpec global = create();
+    private static final MUSpec global = new MUSpec("global", "textmu:global", MUPerms.DEFAULTS, MUPerms.ANY);
 
+    private final String id;
+    private final String name;
     private final MUPerms permissions;
     private final Property.Predicate defaults;
 
     private MUSpec(MUPerms permissions, Property.Predicate defaults) {
+        this("muspec", "textmu:muspec", permissions, defaults);
+    }
+
+    private MUSpec(String name, String id, MUPerms permissions, Property.Predicate defaults) {
         this.permissions = permissions;
         this.defaults = defaults;
+        this.name = name;
+        this.id = id;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String serialize(Text text) {
+        return write(text);
+    }
+
+    @Override
+    public Text deserialize(String input) throws TextParseException {
+        return render(input);
     }
 
     public MUPerms getPermissions() {
@@ -114,7 +144,7 @@ public class MUSpec {
     }
 
     public static MUSpec create(MUPerms permissions) {
-        return new MUSpec(permissions, MUPerms.ANY);
+        return create(permissions, MUPerms.ANY);
     }
 
     public static MUSpec create(MUPerms permissions, Property.Predicate defaults) {
