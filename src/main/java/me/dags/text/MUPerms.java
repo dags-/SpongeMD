@@ -26,6 +26,9 @@
 package me.dags.text;
 
 import com.google.common.collect.ImmutableMap;
+import me.dags.text.preset.MUPresets;
+import me.dags.text.preset.MUStyle;
+import me.dags.text.syntax.Property;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.format.TextColor;
 import org.spongepowered.api.text.format.TextStyle;
@@ -44,9 +47,11 @@ public class MUPerms {
     public static final String COMMAND = "command";
     public static final String SUGGESTION = "suggestion";
 
+    private final String base;
     private final Map<Object, String> nodes;
 
     private MUPerms(Builder builder) {
+        this.base = builder.base;
         this.nodes = ImmutableMap.copyOf(builder.nodes);
     }
 
@@ -61,6 +66,17 @@ public class MUPerms {
             }
             return subject.hasPermission(node);
         };
+    }
+
+    MUPerms withPresets(MUPresets stylesheet) {
+        if (stylesheet.isEmpty()) {
+            return this;
+        } else {
+            Builder builder = new Builder(base);
+            builder.nodes.putAll(nodes);
+            stylesheet.getStyles().values().forEach(builder::preset);
+            return builder.build();
+        }
     }
 
     public static Builder builder(String base) {
@@ -105,6 +121,11 @@ public class MUPerms {
 
         public Builder action(String name) {
             nodes.put(name, base + ".action." + name);
+            return this;
+        }
+
+        private Builder preset(MUStyle style) {
+            nodes.put(style.getName(), base + ".preset." + style.getName());
             return this;
         }
 

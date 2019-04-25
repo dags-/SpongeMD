@@ -23,8 +23,35 @@
  *
  */
 
-package me.dags.text;
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 dags
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
 
+package me.dags.text.syntax;
+
+import me.dags.text.MUPerms;
+import me.dags.text.preset.MUPresets;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -38,7 +65,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-interface Property {
+public interface Property {
 
     Property NONE = b -> {};
     Map<String, TextColor> COLORS = Collections.unmodifiableMap(textColors());
@@ -55,7 +82,7 @@ interface Property {
         return in.matches("^((ht|f)tp(s?)://|www\\.)?([\\da-z-]+)(\\.([\\da-z-]+))*((\\.[a-z]{2,6})+|:[0-9]+)(/[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)*?$");
     }
 
-    static Property parse(String in, Predicate predicate) throws IOException {
+    static Property parse(String in, MUPresets presets, Predicate predicate) throws IOException {
         if (in.isEmpty()) {
             return Property.NONE;
         }
@@ -76,7 +103,7 @@ interface Property {
         if (style.isPresent()) {
             return parseStyle(style.get(), predicate);
         }
-        return parseHover(in, predicate);
+        return parseHover(in, presets, predicate);
     }
 
     static Property parseColor(TextColor color, Predicate predicate) {
@@ -93,9 +120,9 @@ interface Property {
         return NONE;
     }
 
-    static Property parseHover(String in, Predicate predicate) throws IOException {
+    static Property parseHover(String in, MUPresets presets, Predicate predicate) throws IOException {
         if (predicate.test(MUPerms.HOVER)) {
-            Text text = Parser.parse(in, predicate);
+            Text text = Parser.parse(in, presets, predicate).build();
             return b -> b.onHover(TextActions.showText(text));
         }
         return NONE;

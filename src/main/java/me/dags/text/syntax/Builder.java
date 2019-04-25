@@ -23,10 +23,37 @@
  *
  */
 
-package me.dags.text;
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 dags
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
 
+package me.dags.text.syntax;
+
+import me.dags.text.preset.MUPresets;
 import org.spongepowered.api.text.Text;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,20 +107,26 @@ class Builder {
         return this;
     }
 
-    public Text.Builder build() {
+    public Text.Builder build(MUPresets preset, Property.Predicate predicate) throws IOException {
         Text.Builder builder;
         Iterator<Builder> iterator = children.iterator();
 
         if (pre.length() > 0) {
-            builder = Text.builder(pre.toString());
+            String text = pre.toString();
+            String plain = preset.apply(text, predicate);
+            if (plain.length() == text.length()) {
+                builder = Text.builder(plain);
+            } else {
+                builder = Parser.parse(plain, MUPresets.NONE, predicate);
+            }
         } else if (iterator.hasNext()) {
-            builder = iterator.next().build();
+            builder = iterator.next().build(preset, predicate);
         } else {
             return Text.EMPTY.toBuilder();
         }
 
         while (iterator.hasNext()) {
-            builder.append(iterator.next().build().build());
+            builder.append(iterator.next().build(preset, predicate).build());
         }
 
         for (Property property : properties) {
