@@ -26,13 +26,17 @@
 package me.dags.text;
 
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.TextRepresentable;
+import org.spongepowered.api.text.TranslatableText;
 import org.spongepowered.api.text.action.ClickAction;
 import org.spongepowered.api.text.action.HoverAction;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyle;
 import org.spongepowered.api.text.format.TextStyles;
+import org.spongepowered.api.text.translation.Translation;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 class Writer {
@@ -45,16 +49,10 @@ class Writer {
 
     public void write(Text text) throws IOException {
         if (isPlain(text)) {
-            writer.write(text.toPlainSingle());
-            for (Text child : text.getChildren()) {
-                write(child);
-            }
+            writePlain(text);
         } else {
             writer.write('[');
-            writer.write(text.toPlainSingle());
-            for (Text child : text.getChildren()) {
-                write(child);
-            }
+            writePlain(text);
             writer.write(']');
             writer.write('(');
             boolean comma;
@@ -63,6 +61,23 @@ class Writer {
             comma = writeColor(comma, text);
             comma = writeStyle(comma, text);
             writer.write(')');
+        }
+    }
+
+    private void writePlain(Text text) throws IOException {
+        if (text instanceof TranslatableText) {
+            TranslatableText translatable = (TranslatableText) text;
+            Translation translation = translatable.getTranslation();
+            // well this sucks :/
+            Object[] arguments = translatable.getArguments().stream()
+                    .map(o -> o instanceof TextRepresentable ? ((Text) o).toPlain() : o)
+                    .toArray();
+            writer.write(translation.get(arguments));
+        } else {
+            writer.write(text.toPlainSingle());
+        }
+        for (Text child : text.getChildren()) {
+            write(child);
         }
     }
 
@@ -143,7 +158,7 @@ class Writer {
         if (text.getColor() != TextColors.NONE) {
             return false;
         }
-        if (text.getStyle() != TextStyles.NONE) {
+        if (text.getStyle() != TextStyles.NONE && !text.getStyle().isEmpty()) {
             return false;
         }
         if (text.getClickAction().isPresent()) {

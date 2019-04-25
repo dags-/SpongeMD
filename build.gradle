@@ -7,7 +7,7 @@ plugins {
 }
 
 group "me.dags"
-version "0.3.6"
+version "0.3.7"
 def spongeAPI = "7.1.0"
 description = "A markup syntax for Sponge"
 
@@ -24,8 +24,8 @@ repositories {
 
 dependencies {
     compile "org.spongepowered:spongeapi:${spongeAPI}"
-    testCompile "junit:junit:4.12"
     shade "com.github.dags-:Template:0.1.1"
+    testCompile "junit:junit:4.12"
 }
 
 shadowJar {

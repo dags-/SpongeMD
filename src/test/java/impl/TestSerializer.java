@@ -25,38 +25,41 @@
 
 package impl;
 
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.text.serializer.TextSerializers;
+import org.spongepowered.api.text.*;
+import org.spongepowered.api.text.serializer.SafeTextSerializer;
+import org.spongepowered.api.text.serializer.TextParseException;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-
-public class Init {
-
-    static {
-        try {
-            Field field = Sponge.class.getDeclaredField("registry");
-            field.setAccessible(true);
-            field.set(null, new TestReg());
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+public class TestSerializer implements SafeTextSerializer {
+    @Override
+    public String getId() {
+        return "test";
     }
 
-    static {
-        try {
-            Field field = TextSerializers.class.getDeclaredField("PLAIN");
-            field.setAccessible(true);
-            Field modifiers = Field.class.getDeclaredField("modifiers");
-            modifiers.setAccessible(true);
-            modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-            field.setAccessible(true);
-            field.set(null, new TestSerializer());
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public String getName() {
+        return "test";
     }
 
-    public static void init(){}
+    @Override
+    public String serialize(Text text) {
+        if (text instanceof LiteralText) {
+            return ((LiteralText) text).getContent();
+        }
+        if (text instanceof TranslatableText) {
+            TranslatableText translatable = (TranslatableText) text;
+            return translatable.getTranslation().get(translatable.getArguments().toArray());
+        }
+        if (text instanceof SelectorText) {
+            return ((SelectorText) text).getSelector().toPlain();
+        }
+        if (text instanceof ScoreText) {
+            return ((ScoreText) text).getOverride().orElse("" + ((ScoreText) text).getScore().getScore());
+        }
+        return null;
+    }
+
+    @Override
+    public Text deserialize(String input) throws TextParseException {
+        return null;
+    }
 }

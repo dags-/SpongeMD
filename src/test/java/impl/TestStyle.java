@@ -38,8 +38,8 @@ public class TestStyle extends TextStyle.Base {
 
     private final String name;
 
-    private TestStyle(String name) {
-        super(null, null, null, null, null);
+    private TestStyle(String name, Boolean bold, Boolean italic, Boolean underline, Boolean strike, Boolean obf) {
+        super(bold, italic, underline, strike, obf);
         this.name = name;
         all.put(name, this);
     }
@@ -59,11 +59,11 @@ public class TestStyle extends TextStyle.Base {
         return getName();
     }
 
-    public static final TextStyle.Base BOLD = new TestStyle("bold");
-    public static final TextStyle.Base ITALIC = new TestStyle("italic");
-    public static final TextStyle.Base NONE = new TestStyle("none");
-    public static final TextStyle.Base OBFUSCATED = new TestStyle("obfuscated");
-    public static final TextStyle.Base RESET = new TestStyle("reset");
-    public static final TextStyle.Base STRIKETHROUGH = new TestStyle("strikethrough");
-    public static final TextStyle.Base UNDERLINE = new TestStyle("underline");
+    public static final TextStyle.Base BOLD = new TestStyle("bold", true, null, null, null, null);
+    public static final TextStyle.Base ITALIC = new TestStyle("italic", null, true, null, null, null);
+    public static final TextStyle.Base NONE = new TestStyle("none", null, null, null, null, null);
+    public static final TextStyle.Base OBFUSCATED = new TestStyle("obfuscated", null, null, null, null, true);
+    public static final TextStyle.Base RESET = new TestStyle("reset", null, null, null, null, null);
+    public static final TextStyle.Base STRIKETHROUGH = new TestStyle("strikethrough", null, null, null, true, null);
+    public static final TextStyle.Base UNDERLINE = new TestStyle("underline", null, null, true, null, null);
 }
