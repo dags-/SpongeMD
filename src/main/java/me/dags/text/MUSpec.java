@@ -66,16 +66,6 @@ public class MUSpec implements TextSerializer {
         return name;
     }
 
-    @Override
-    public String serialize(Text text) {
-        return write(text);
-    }
-
-    @Override
-    public Text deserialize(String input) throws TextParseException {
-        return render(input);
-    }
-
     public MUPerms getPermissions() {
         return permissions;
     }
@@ -105,6 +95,16 @@ public class MUSpec implements TextSerializer {
         }
     }
 
+    @Override
+    public String serialize(Text text) {
+        return write(text);
+    }
+
+    @Override
+    public Text deserialize(String input) throws TextParseException {
+        return render(input);
+    }
+
     public MUTemplate template(String input) {
         try {
             return new MUTemplate(this, Template.parse(new CharReader(input)), defaults);
@@ -130,13 +130,23 @@ public class MUSpec implements TextSerializer {
     }
 
     public void write(Text text, java.io.Writer writer) {
+        write(text, writer, false);
+    }
+
+    public void write(Text text, java.io.Writer writer, boolean escape) {
         try {
-            Writer textWriter = new Writer(writer);
+            Writer textWriter = new Writer(writer, escape);
             textWriter.write(text);
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String writeEscaped(Text text) {
+        StringWriter writer = new StringWriter();
+        write(text, writer, true);
+        return writer.toString();
     }
 
     public static MUSpec create() {

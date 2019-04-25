@@ -95,6 +95,16 @@ public class WriteTests {
         );
     }
 
+    @Test
+    public void test7() {
+        Text text = Text.builder("[Player](this is a weird, chat format)")
+                .color(TestColor.AQUA)
+                .build();
+        String result1 = MUSpec.global().writeEscaped(text);
+        String expected1 = "[`[Player](this is a weird, chat format)`](aqua)";
+        Assert.assertEquals(expected1, result1);
+    }
+
     private static void test(Text text, String expected) {
         String result = MUSpec.global().write(text);
         Assert.assertEquals(expected, result);

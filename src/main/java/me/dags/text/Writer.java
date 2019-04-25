@@ -36,15 +36,19 @@ import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.text.translation.Translation;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 class Writer {
 
-    private final java.io.Writer writer;
+    private static final Pattern ESCAPE_CHARS = Pattern.compile("[\\[\\](),]");
 
-    public Writer(java.io.Writer writer) {
+    private final java.io.Writer writer;
+    private final boolean escape;
+
+    public Writer(java.io.Writer writer, boolean escape) {
         this.writer = writer;
+        this.escape = escape;
     }
 
     public void write(Text text) throws IOException {
@@ -72,9 +76,9 @@ class Writer {
             Object[] arguments = translatable.getArguments().stream()
                     .map(o -> o instanceof TextRepresentable ? ((Text) o).toPlain() : o)
                     .toArray();
-            writer.write(translation.get(arguments));
+            writeString(translation.get(arguments));
         } else {
-            writer.write(text.toPlainSingle());
+            writeString(text.toPlainSingle());
         }
         for (Text child : text.getChildren()) {
             write(child);
@@ -88,13 +92,13 @@ class Writer {
         }
         ClickAction<?> action = optional.get();
         if (action instanceof ClickAction.OpenUrl) {
-            return writeString(comma, action.getResult().toString());
+            return writeProperty(comma, action.getResult().toString());
         }
         if (action instanceof ClickAction.RunCommand) {
-            return writeString(comma, "/" + action.getResult());
+            return writeProperty(comma, "/" + action.getResult());
         }
         if (action instanceof ClickAction.SuggestCommand) {
-            return writeString(comma, "//" + action.getResult());
+            return writeProperty(comma, "//" + action.getResult());
         }
         return false;
     }
@@ -121,7 +125,7 @@ class Writer {
 
     private boolean writeColor(boolean comma, Text text) throws IOException {
         if (text.getColor() != TextColors.NONE) {
-            return writeString(comma, text.getColor().getName().toLowerCase());
+            return writeProperty(comma, text.getColor().getName().toLowerCase());
         }
         return false;
     }
@@ -129,29 +133,39 @@ class Writer {
     private boolean writeStyle(boolean comma, Text text) throws IOException {
         TextStyle style = text.getStyle();
         if (style.isBold().orElse(false)) {
-            comma = writeString(comma, "bold");
+            comma = writeProperty(comma, "bold");
         }
         if (style.isItalic().orElse(false)) {
-            comma = writeString(comma, "italic");
+            comma = writeProperty(comma, "italic");
         }
         if (style.isObfuscated().orElse(false)) {
-            comma = writeString(comma, "obfuscated");
+            comma = writeProperty(comma, "obfuscated");
         }
         if (style.hasUnderline().orElse(false)) {
-            comma = writeString(comma, "underline");
+            comma = writeProperty(comma, "underline");
         }
         if (style.hasStrikethrough().orElse(false)) {
-            comma = writeString(comma, "strikethrough");
+            comma = writeProperty(comma, "strikethrough");
         }
         return comma;
     }
 
-    private boolean writeString(boolean comma, String string) throws IOException {
+    private boolean writeProperty(boolean comma, String string) throws IOException {
         if (comma) {
             writer.write(',');
         }
-        writer.write(string);
+        writeString(string);
         return true;
+    }
+
+    private void writeString(String string) throws IOException {
+        if (escape && ESCAPE_CHARS.matcher(string).find()) {
+            writer.write('`');
+            writer.write(string);
+            writer.write('`');
+        } else {
+            writer.write(string);
+        }
     }
 
     private static boolean isPlain(Text text) {
