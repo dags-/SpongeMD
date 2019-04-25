@@ -44,31 +44,29 @@ class Writer {
     private static final Pattern ESCAPE_CHARS = Pattern.compile("[\\[\\](),]");
 
     private final java.io.Writer writer;
-    private final boolean escape;
 
-    public Writer(java.io.Writer writer, boolean escape) {
+    public Writer(java.io.Writer writer) {
         this.writer = writer;
-        this.escape = escape;
     }
 
-    public void write(Text text) throws IOException {
+    public void write(Text text, boolean escape) throws IOException {
         if (isPlain(text)) {
-            writePlain(text);
+            writePlain(text, escape);
         } else {
             writer.write('[');
-            writePlain(text);
+            writePlain(text, escape);
             writer.write(']');
             writer.write('(');
             boolean comma;
-            comma = writeClickAction(false, text);
-            comma = writeHoverAction(comma, text);
-            comma = writeColor(comma, text);
-            comma = writeStyle(comma, text);
+            comma = writeClickAction(text, false);
+            comma = writeHoverAction(text, comma);
+            comma = writeColor(text, comma);
+            comma = writeStyle(text, comma);
             writer.write(')');
         }
     }
 
-    private void writePlain(Text text) throws IOException {
+    private void writePlain(Text text, boolean escape) throws IOException {
         if (text instanceof TranslatableText) {
             TranslatableText translatable = (TranslatableText) text;
             Translation translation = translatable.getTranslation();
@@ -76,34 +74,37 @@ class Writer {
             Object[] arguments = translatable.getArguments().stream()
                     .map(o -> o instanceof TextRepresentable ? ((Text) o).toPlain() : o)
                     .toArray();
-            writeString(translation.get(arguments));
+
+            String plain = translation.get(arguments);
+            writeString(plain, escape && ESCAPE_CHARS.matcher(plain).find());
         } else {
-            writeString(text.toPlainSingle());
+            String plain = text.toPlainSingle();
+            writeString(plain, escape && ESCAPE_CHARS.matcher(plain).find());
         }
         for (Text child : text.getChildren()) {
-            write(child);
+            write(child, escape);
         }
     }
 
-    private boolean writeClickAction(boolean comma, Text text) throws IOException {
+    private boolean writeClickAction(Text text, boolean comma) throws IOException {
         Optional<ClickAction<?>> optional = text.getClickAction();
         if (!optional.isPresent()) {
             return false;
         }
         ClickAction<?> action = optional.get();
         if (action instanceof ClickAction.OpenUrl) {
-            return writeProperty(comma, action.getResult().toString());
+            return writeProperty(action.getResult().toString(), comma);
         }
         if (action instanceof ClickAction.RunCommand) {
-            return writeProperty(comma, "/" + action.getResult());
+            return writeProperty("/" + action.getResult(), comma);
         }
         if (action instanceof ClickAction.SuggestCommand) {
-            return writeProperty(comma, "//" + action.getResult());
+            return writeProperty("//" + action.getResult(), comma);
         }
         return false;
     }
 
-    private boolean writeHoverAction(boolean comma, Text text) throws IOException {
+    private boolean writeHoverAction(Text text, boolean comma) throws IOException {
         Optional<HoverAction<?>> optional = text.getHoverAction();
         if (!optional.isPresent()) {
             return false;
@@ -114,52 +115,50 @@ class Writer {
             if (comma) {
                 writer.write(',');
             }
-            writer.write('`');
-            write(((HoverAction.ShowText) action).getResult());
-            writer.write('`');
+            write(((HoverAction.ShowText) action).getResult(), true);
             return true;
         }
 
         return false;
     }
 
-    private boolean writeColor(boolean comma, Text text) throws IOException {
+    private boolean writeColor(Text text, boolean comma) throws IOException {
         if (text.getColor() != TextColors.NONE) {
-            return writeProperty(comma, text.getColor().getName().toLowerCase());
+            return writeProperty(text.getColor().getName().toLowerCase(), comma);
         }
         return false;
     }
 
-    private boolean writeStyle(boolean comma, Text text) throws IOException {
+    private boolean writeStyle(Text text, boolean comma) throws IOException {
         TextStyle style = text.getStyle();
         if (style.isBold().orElse(false)) {
-            comma = writeProperty(comma, "bold");
+            comma = writeProperty("bold", comma);
         }
         if (style.isItalic().orElse(false)) {
-            comma = writeProperty(comma, "italic");
+            comma = writeProperty("italic", comma);
         }
         if (style.isObfuscated().orElse(false)) {
-            comma = writeProperty(comma, "obfuscated");
+            comma = writeProperty("obfuscated", comma);
         }
         if (style.hasUnderline().orElse(false)) {
-            comma = writeProperty(comma, "underline");
+            comma = writeProperty("underline", comma);
         }
         if (style.hasStrikethrough().orElse(false)) {
-            comma = writeProperty(comma, "strikethrough");
+            comma = writeProperty("strikethrough", comma);
         }
         return comma;
     }
 
-    private boolean writeProperty(boolean comma, String string) throws IOException {
+    private boolean writeProperty(String string, boolean comma) throws IOException {
         if (comma) {
             writer.write(',');
         }
-        writeString(string);
+        writeString(string, ESCAPE_CHARS.matcher(string).find());
         return true;
     }
 
-    private void writeString(String string) throws IOException {
-        if (escape && ESCAPE_CHARS.matcher(string).find()) {
+    private void writeString(String string, boolean escape) throws IOException {
+        if (escape) {
             writer.write('`');
             writer.write(string);
             writer.write('`');

@@ -31,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.TranslatableText;
+import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.translation.FixedTranslation;
 
 public class WriteTests {
@@ -89,8 +90,8 @@ public class WriteTests {
     public void test6() {
         test(
                 Text.builder(new FixedTranslation("hello %s"), Text.of("world"))
-                    .color(TestColor.GREEN)
-                    .build(),
+                        .color(TestColor.GREEN)
+                        .build(),
                 "[hello world](green)"
         );
     }
@@ -103,6 +104,17 @@ public class WriteTests {
         String result1 = MUSpec.global().writeEscaped(text);
         String expected1 = "[`[Player](this is a weird, chat format)`](aqua)";
         Assert.assertEquals(expected1, result1);
+    }
+
+    @Test
+    public void test8() {
+        test(
+                Text.builder("Hover me")
+                        .onHover(TextActions.showText(Text.of("This is the (hover) text")))
+                        .color(TestColor.RED)
+                        .build(),
+                "[Hover me](`This is the (hover) text`,red)"
+        );
     }
 
     private static void test(Text text, String expected) {

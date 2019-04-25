@@ -135,8 +135,8 @@ public class MUSpec implements TextSerializer {
 
     public void write(Text text, java.io.Writer writer, boolean escape) {
         try {
-            Writer textWriter = new Writer(writer, escape);
-            textWriter.write(text);
+            Writer textWriter = new Writer(writer);
+            textWriter.write(text, escape);
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();

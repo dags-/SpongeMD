@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 interface Property {
 
@@ -46,9 +45,9 @@ interface Property {
     Map<String, TextStyle> STYLES = Collections.unmodifiableMap(textStyles());
 
     void apply(Text.Builder builder);
-    
+
     interface Predicate {
-        
+
         boolean test(Object property);
     }
 
@@ -157,7 +156,7 @@ interface Property {
         altNames.put("reset", new String[]{"reset", "rst", "&r", "r"});
         return altNames;
     }
-    
+
     static Map<String, TextColor> textColors() {
         try {
             Map<String, String[]> altNames = altNames();
