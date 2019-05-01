@@ -65,8 +65,8 @@ public class ParseTests {
 
     @Test
     public void test5() {
-        test("hello [world](&c)", Text.builder("hello ")
-                .append(Text.builder("world").color(TestColor.RED).build())
+        test("hello [[world]](&c)", Text.builder("hello ")
+                .append(Text.builder("[world]").color(TestColor.RED).build())
                 .build());
     }
 

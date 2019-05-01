@@ -7,7 +7,7 @@ plugins {
 }
 
 group "me.dags"
-version "0.4.0-SNAPSHOT"
+version "0.4.1-SNAPSHOT"
 def spongeAPI = "7.2.0-SNAPSHOT"
 description = "A markup syntax for Sponge"
 

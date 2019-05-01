@@ -121,10 +121,18 @@ public class Writer {
             return writeProperty(action.getResult().toString(), comma);
         }
         if (action instanceof ClickAction.RunCommand) {
+            String command = action.getResult().toString();
+            if (command.startsWith("/")) {
+                writeProperty(command, comma);
+            }
             return writeProperty("/" + action.getResult(), comma);
         }
         if (action instanceof ClickAction.SuggestCommand) {
-            return writeProperty("//" + action.getResult(), comma);
+            String command = action.getResult().toString();
+            if (command.startsWith("/")) {
+                writeProperty("/" + command, comma);
+            }
+            return writeProperty("//" + command, comma);
         }
         return false;
     }

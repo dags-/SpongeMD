@@ -59,13 +59,13 @@ import java.io.IOException;
 public class Parser {
 
     private final MUPresets presets;
-    private final CharReader reader;
+    private final Reader reader;
     private final StringBuilder raw;
     private final Property.Predicate predicate;
 
     public Parser(CharReader reader, StringBuilder raw, MUPresets presets, Property.Predicate predicate) {
         this.predicate = predicate;
-        this.reader = reader;
+        this.reader = new Reader(reader);
         this.presets = presets;
         this.raw = raw;
     }
@@ -73,7 +73,7 @@ public class Parser {
     public Text.Builder parse() throws IOException {
         Context context = new Context(new Builder());
         while (reader.next()) {
-            char end = readText(reader, context);
+            char end = readText(context);
             if (end == '[') {
                 int start = raw.length() - 1;
                 Builder child = parseMarkdown();
@@ -92,17 +92,17 @@ public class Parser {
     private Builder parseMarkdown() throws IOException {
         Context context = new Context(new Builder());
         while (reader.next()) {
-            char end = readText(reader, context);
+            char end = readText(context);
             if (end == ']') {
                 if (!reader.next()) {
                     return Builder.EMPTY;
                 }
-                char next = reader.character();
-                raw.append(next);
+                char next = reader.peek();
                 if (next != '(') {
                     return Builder.EMPTY;
                 }
-                return parseProperties(reader, context);
+                raw.append(reader.character());
+                return parseProperties(context);
             }
             if (end == '[') {
                 int start = raw.length() - 1;
@@ -117,7 +117,7 @@ public class Parser {
         return Builder.EMPTY;
     }
 
-    private Builder parseProperties(CharReader reader, Context context) throws IOException {
+    private Builder parseProperties(Context context) throws IOException {
         StringBuilder buffer = new StringBuilder();
         while (reader.next()) {
             char end = readProperty(buffer);
@@ -135,7 +135,7 @@ public class Parser {
         return Builder.EMPTY;
     }
 
-    private char readText(CharReader reader, Context context) throws IOException {
+    private char readText(Context context) throws IOException {
         boolean charEscaped = false;
         boolean stringEscaped = false;
         while (reader.next()) {
