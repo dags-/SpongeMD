@@ -93,8 +93,7 @@ public class MUSpec implements TextSerializer {
     public Text render(Property.Predicate predicate, String input) {
         try {
             CharReader reader = new CharReader(input);
-            StringBuilder buffer = new StringBuilder(input.length());
-            return new Parser(reader, buffer, presets, predicate).parse().build();
+            return new Parser(reader, presets, predicate).parse().build();
         } catch (IOException e) {
             return Text.EMPTY;
         }
@@ -103,8 +102,7 @@ public class MUSpec implements TextSerializer {
     public Text render(Property.Predicate predicate, Reader reader) {
         try {
             CharReader charReader = new CharReader(reader);
-            StringBuilder buffer = new StringBuilder(140);
-            return new Parser(charReader, buffer, presets, predicate).parse().build();
+            return new Parser(charReader, presets, predicate).parse().build();
         } catch (IOException e) {
             return Text.EMPTY;
         }

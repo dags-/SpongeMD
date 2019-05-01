@@ -119,6 +119,12 @@ public class WriteTests {
 
     private static void test(Text text, String expected) {
         String result = MUSpec.global().write(text);
+
+        System.out.println("---------------------------------------");
+        System.out.println("Input    : " + text);
+        System.out.println("Result   : " + result);
+        System.out.println("Expected : " + expected);
+
         Assert.assertEquals(expected, result);
     }
 }

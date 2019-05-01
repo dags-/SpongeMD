@@ -167,7 +167,7 @@ public interface Property {
         altNames.put("dark_purple", new String[]{"dark_purple", "*purple", "purple*", "*pur", "pur*", "&5", "5"});
         altNames.put("dark_red", new String[]{"dark_red", "*red", "red*", "&4", "4"});
         altNames.put("gray", new String[]{"gray", "grey", "gry", "&7", "7"});
-        altNames.put("green", new String[]{"green", "grn", "&a", "d"});
+        altNames.put("green", new String[]{"green", "grn", "&a", "a"});
         altNames.put("gold", new String[]{"gold", "dark_yellow", "*yellow", "yellow*", "*yel", "yel*", "&e", "e"});
         altNames.put("light_purple", new String[]{"light_purple", "purple", "pur", "&d", "d"});
         altNames.put("red", new String[]{"red", "&c", "c"});

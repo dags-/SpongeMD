@@ -60,14 +60,12 @@ public class Parser {
 
     private final MUPresets presets;
     private final Reader reader;
-    private final StringBuilder raw;
     private final Property.Predicate predicate;
 
-    public Parser(CharReader reader, StringBuilder raw, MUPresets presets, Property.Predicate predicate) {
+    public Parser(CharReader reader, MUPresets presets, Property.Predicate predicate) {
         this.predicate = predicate;
         this.reader = new Reader(reader);
         this.presets = presets;
-        this.raw = raw;
     }
 
     public Text.Builder parse() throws IOException {
@@ -75,15 +73,10 @@ public class Parser {
         while (reader.next()) {
             char end = readText(context);
             if (end == '[') {
-                int start = raw.length() - 1;
                 Builder child = parseMarkdown();
-                if (child.isEmpty()) {
-                    context.builder.text(raw.substring(start));
-                } else {
-                    context.builder.child(child);
-                }
+                context.append(child, '[');
             } else if (end != CharReader.EOF) {
-                context.builder.text(end);
+                context.root.text(end);
             }
         }
         return context.root.build(presets, predicate);
@@ -95,32 +88,31 @@ public class Parser {
             char end = readText(context);
             if (end == ']') {
                 if (!reader.next()) {
-                    return Builder.EMPTY;
+                    return context.root.fail(end);
                 }
                 char next = reader.peek();
                 if (next != '(') {
-                    return Builder.EMPTY;
+                    return context.root.fail(end);
                 }
-                raw.append(reader.character());
+                reader.character();
                 return parseProperties(context);
             }
             if (end == '[') {
-                int start = raw.length() - 1;
                 Builder child = parseMarkdown();
-                if (child.isEmpty()) {
-                    context.builder.text(raw.substring(start));
-                } else {
-                    context.builder.child(child);
-                }
+                context.append(child, '[');
             }
         }
-        return Builder.EMPTY;
+        return context.root.fail(CharReader.EOF);
     }
 
     private Builder parseProperties(Context context) throws IOException {
+        StringBuilder raw = new StringBuilder("](");
         StringBuilder buffer = new StringBuilder();
         while (reader.next()) {
-            char end = readProperty(buffer);
+            char end = readProperty(buffer, raw);
+            if (end == CharReader.EOF) {
+                break;
+            }
             if (end == ')') {
                 Property property = Property.parse(buffer.toString().trim(), presets, predicate);
                 context.root.property(property);
@@ -132,7 +124,7 @@ public class Parser {
                 buffer.setLength(0);
             }
         }
-        return Builder.EMPTY;
+        return context.root.text(raw.toString()).fail(CharReader.EOF);
     }
 
     private char readText(Context context) throws IOException {
@@ -140,7 +132,6 @@ public class Parser {
         boolean stringEscaped = false;
         while (reader.next()) {
             char c = reader.character();
-            raw.append(c);
 
             if (charEscaped) {
                 context.accept(c);
@@ -172,7 +163,7 @@ public class Parser {
         return CharReader.EOF;
     }
 
-    private char readProperty(StringBuilder buffer) throws IOException {
+    private char readProperty(StringBuilder buffer, StringBuilder raw) throws IOException {
         int depth = 0;
         boolean charEscaped = false;
         boolean stringEscaped = false;
@@ -226,7 +217,6 @@ public class Parser {
 
     static Text.Builder parse(String input, MUPresets presets, Property.Predicate predicate) throws IOException {
         CharReader reader = new CharReader(input);
-        StringBuilder raw = new StringBuilder(input.length());
-        return new Parser(reader, raw, presets, predicate).parse();
+        return new Parser(reader, presets, predicate).parse();
     }
 }

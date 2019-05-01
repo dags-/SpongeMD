@@ -25,6 +25,8 @@
 
 package me.dags.text.syntax;
 
+import me.dags.template.CharReader;
+
 public class Context {
 
     final Builder root;
@@ -37,5 +39,25 @@ public class Context {
 
     void accept(char c) {
         builder = builder.text(c);
+    }
+
+    void accept(String string) {
+        builder = builder.text(string);
+    }
+
+    void append(Builder child, char pre) {
+        if (child.isValid()) {
+            builder.child(child);
+        } else {
+            builder.text(pre);
+            if (child.isPlain()) {
+                builder.text(child.getPlain());
+            } else {
+                builder.child(child);
+            }
+            if (child.failChar() != CharReader.EOF) {
+                accept(child.failChar());
+            }
+        }
     }
 }

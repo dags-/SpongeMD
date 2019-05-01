@@ -31,6 +31,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
+import sun.awt.image.ImageWatched;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class ParseTests {
 
@@ -60,7 +64,7 @@ public class ParseTests {
 
     @Test
     public void test4() {
-        test("hello [world](", Text.of("hello [world]("));
+        test("hello [world]( ", Text.of("hello [world]( "));
     }
 
     @Test
@@ -93,10 +97,10 @@ public class ParseTests {
     @Test
     public void test8() {
         test(
-                "Plain text [hover me](some hover text) and more plain text",
+                "Plain text [hover me](some hover text) and more isPlain text",
                 Text.builder("Plain text ").append(Text.builder("hover me")
                         .onHover(TextActions.showText(Text.of("some hover text"))).build())
-                        .append(Text.of(" and more plain text"))
+                        .append(Text.of(" and more isPlain text"))
                         .build()
         );
     }
@@ -127,8 +131,27 @@ public class ParseTests {
         );
     }
 
+    @Test
+    public void test10() {
+        test(
+                "Plain text [[hover me](some hover text)]( and more isPlain text",
+                Text.builder("Plain text [")
+                        .append(Text.builder("hover me")
+                                .onHover(TextActions.showText(Text.of("some hover text")))
+                                .build())
+                        .append(Text.of("]( and more isPlain text"))
+                        .build()
+        );
+    }
+
     private static void test(String string, Text expected) {
         Text result = MUSpec.global().render(string);
+
+        System.out.println("---------------------------------------");
+        System.out.println("Input    : " + string);
+        System.out.println("Result   : " + result);
+        System.out.println("Expected : " + expected);
+
         Assert.assertEquals(expected, result);
     }
 }

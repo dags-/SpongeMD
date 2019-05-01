@@ -50,6 +50,7 @@
 
 package me.dags.text.syntax;
 
+import me.dags.template.CharReader;
 import me.dags.text.preset.MUPresets;
 import org.spongepowered.api.text.Text;
 
@@ -60,14 +61,33 @@ import java.util.List;
 
 class Builder {
 
-    public static final Builder EMPTY = new Builder();
-
     private final StringBuilder pre = new StringBuilder();
     private final List<Property> properties = new LinkedList<>();
     private final List<Builder> children = new LinkedList<>();
 
-    public boolean isEmpty() {
-        return pre.length() == 0 && children.size() == 0;
+    private boolean valid = true;
+    private char failChar = CharReader.EOF;
+
+    public boolean isPlain() {
+        return properties.isEmpty() && children.isEmpty();
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public Builder fail(char c) {
+        failChar = c;
+        valid = false;
+        return this;
+    }
+
+    public char failChar() {
+        return failChar;
+    }
+
+    public String getPlain() {
+        return pre.toString();
     }
 
     public Builder text(char c) {
@@ -87,8 +107,6 @@ class Builder {
             if (children.isEmpty()) {
                 pre.append(s);
             } else {
-                Builder post = new Builder();
-                post.text(s);
                 return child(new Builder().text(s));
             }
         }
@@ -103,7 +121,11 @@ class Builder {
     }
 
     public Builder child(Builder child) {
-        children.add(child);
+        if (child.pre.length() == 0 && child.properties.isEmpty()) {
+            children.addAll(child.children);
+        } else {
+            children.add(child);
+        }
         return this;
     }
 
