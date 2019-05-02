@@ -108,6 +108,22 @@ public class MUSpec implements TextSerializer {
         }
     }
 
+    public Text render(Text input) {
+        return render(defaults, input);
+    }
+
+    public Text render(Subject subject, Text input) {
+        return render(permissions.wrap(subject), input);
+    }
+
+    public Text render(Property.Predicate predicate, Text input) {
+        try {
+            return Parser.parse(input, null, presets, predicate).build();
+        } catch (IOException e) {
+            return input;
+        }
+    }
+
     @Override
     public String serialize(Text text) {
         return write(text);

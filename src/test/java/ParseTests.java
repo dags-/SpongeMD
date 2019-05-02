@@ -144,11 +144,33 @@ public class ParseTests {
         );
     }
 
+    @Test
+    public void test11() {
+        test(
+                Text.builder().append(Text.of("Hi ")).append(Text.of("[world](red)")).build(),
+                Text.builder()
+                        .append(Text.of("Hi "))
+                        .append(Text.builder("world").color(TestColor.RED).build())
+                        .build()
+        );
+    }
+
     private static void test(String string, Text expected) {
         Text result = MUSpec.global().render(string);
 
         System.out.println("---------------------------------------");
         System.out.println("Input    : " + string);
+        System.out.println("Result   : " + result);
+        System.out.println("Expected : " + expected);
+
+        Assert.assertEquals(expected, result);
+    }
+
+    private static void test(Text input, Text expected) {
+        Text result = MUSpec.global().render(input);
+
+        System.out.println("---------------------------------------");
+        System.out.println("Input    : " + input);
         System.out.println("Result   : " + result);
         System.out.println("Expected : " + expected);
 
