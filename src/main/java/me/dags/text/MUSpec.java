@@ -30,6 +30,7 @@ import me.dags.template.Template;
 import me.dags.text.preset.MUPresets;
 import me.dags.text.syntax.Parser;
 import me.dags.text.syntax.Property;
+import me.dags.text.syntax.Renderer;
 import me.dags.text.syntax.Writer;
 import me.dags.text.template.MUTemplate;
 import org.spongepowered.api.service.permission.Subject;
@@ -92,8 +93,7 @@ public class MUSpec implements TextSerializer {
 
     public Text render(Property.Predicate predicate, String input) {
         try {
-            CharReader reader = new CharReader(input);
-            return new Parser(reader, presets, predicate).parse().build();
+            return Parser.parse(input, presets, predicate).build();
         } catch (IOException e) {
             return Text.EMPTY;
         }
@@ -101,8 +101,7 @@ public class MUSpec implements TextSerializer {
 
     public Text render(Property.Predicate predicate, Reader reader) {
         try {
-            CharReader charReader = new CharReader(reader);
-            return new Parser(charReader, presets, predicate).parse().build();
+            return Parser.parse(new CharReader(reader), presets, predicate).build();
         } catch (IOException e) {
             return Text.EMPTY;
         }
@@ -118,7 +117,7 @@ public class MUSpec implements TextSerializer {
 
     public Text render(Property.Predicate predicate, Text input) {
         try {
-            return Parser.parse(input, null, presets, predicate).build();
+            return Renderer.render(input, presets, predicate).build();
         } catch (IOException e) {
             return input;
         }

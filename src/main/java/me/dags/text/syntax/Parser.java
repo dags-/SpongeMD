@@ -52,11 +52,8 @@ package me.dags.text.syntax;
 
 import me.dags.template.CharReader;
 import me.dags.text.preset.MUPresets;
-import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 
 public class Parser {
@@ -220,46 +217,10 @@ public class Parser {
 
     public static Text.Builder parse(String input, MUPresets presets, Property.Predicate predicate) throws IOException {
         CharReader reader = new CharReader(input);
-        return new Parser(reader, presets, predicate).parse();
+        return parse(reader, presets, predicate);
     }
 
-    public static Text.Builder parse(Text text, @Nullable Text.Builder parent, MUPresets presets, Property.Predicate predicate) throws IOException {
-        Text.Builder builder;
-
-        if (text instanceof LiteralText) {
-            String content = ((LiteralText) text).getContent();
-            if (content.isEmpty()) {
-                builder = text.toBuilder().removeAll();
-            } else {
-                builder = parse(content, presets, predicate);
-                if (builder.getColor() == TextColors.NONE) {
-                    builder.color(text.getColor());
-                }
-                if (builder.getStyle().isEmpty()) {
-                    builder.style(text.getStyle());
-                }
-                if (!builder.getHoverAction().isPresent()) {
-                    text.getHoverAction().ifPresent(builder::onHover);
-                }
-                if (!builder.getClickAction().isPresent()) {
-                    text.getClickAction().ifPresent(builder::onClick);
-                }
-                if (!builder.getShiftClickAction().isPresent()) {
-                    text.getShiftClickAction().ifPresent(builder::onShiftClick);
-                }
-            }
-        } else {
-            builder = text.toBuilder().removeAll();
-        }
-
-        for (Text child : text.getChildren()) {
-            parse(child, builder, presets, predicate);
-        }
-
-        if (parent != null) {
-            parent.append(builder.build());
-        }
-
-        return builder;
+    public static Text.Builder parse(CharReader reader, MUPresets presets, Property.Predicate predicate) throws IOException {
+        return new Parser(reader, presets, predicate).parse();
     }
 }
