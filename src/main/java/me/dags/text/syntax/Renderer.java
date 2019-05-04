@@ -98,7 +98,7 @@ public class Renderer {
             if (o instanceof Text) {
                 Text t = (Text) o;
                 try {
-                    return render(t, null);
+                    return render(t, null).build();
                 } catch (IOException e) {
                     return t;
                 }
