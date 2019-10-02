@@ -32,7 +32,11 @@ import org.junit.Test;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.TranslatableText;
 import org.spongepowered.api.text.action.TextActions;
+import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.text.translation.FixedTranslation;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class WriteTests {
 
@@ -114,6 +118,31 @@ public class WriteTests {
                         .color(TestColor.RED)
                         .build(),
                 "[Hover me](`This is the (hover) text`,red)"
+        );
+    }
+
+    @Test
+    public void test9() throws MalformedURLException {
+        test(
+                Text.builder("Click me")
+                        .onClick(TextActions.openUrl(new URL("https://google.com")))
+                        .color(TestColor.BLUE)
+                        .style(TestStyle.UNDERLINE)
+                        .build(),
+                "[Click me](https://google.com,blue,underline)"
+        );
+    }
+
+    @Test
+    public void test10() throws MalformedURLException {
+        test(
+                Text.builder("Click me")
+                        .onClick(TextActions.openUrl(new URL("https://google.com")))
+                        .onHover(TextActions.showText(Text.of("This is the (hover) text")))
+                        .color(TestColor.BLUE)
+                        .style(TestStyle.UNDERLINE)
+                        .build(),
+                "[Click me](https://google.com,`This is the (hover) text`,blue,underline)"
         );
     }
 

@@ -114,7 +114,7 @@ public class Writer {
     private boolean writeClickAction(Text text, boolean comma) throws IOException {
         Optional<ClickAction<?>> optional = text.getClickAction();
         if (!optional.isPresent()) {
-            return false;
+            return comma;
         }
         ClickAction<?> action = optional.get();
         if (action instanceof ClickAction.OpenUrl) {
@@ -126,13 +126,13 @@ public class Writer {
         if (action instanceof ClickAction.SuggestCommand) {
             return writeProperty("/" + action.getResult().toString(), comma);
         }
-        return false;
+        return comma;
     }
 
     private boolean writeHoverAction(Text text, boolean comma) throws IOException {
         Optional<HoverAction<?>> optional = text.getHoverAction();
         if (!optional.isPresent()) {
-            return false;
+            return comma;
         }
 
         HoverAction<?> action = optional.get();
@@ -144,7 +144,7 @@ public class Writer {
             return true;
         }
 
-        return false;
+        return comma;
     }
 
     private boolean writeColor(Text text, boolean comma) throws IOException {
